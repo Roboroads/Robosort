@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.421" fx:controller="me.roboroads.robosort.Robosort">
+    <padding>
+        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
+    </padding>
+    <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <TextFlow>
+            <Label text="Robosort">
+                <font>
+                    <Font name="System Bold" size="18.0"/>
+                </font>
+            </Label>
+            <Label text=" by Roboroads">
+                <font>
+                    <Font name="System Italic" size="12.0"/>
+                </font>
+            </Label>
+        </TextFlow>
+        <Label text="Available commands:">
+            <font>
+                <Font name="System Bold"/>
+            </font>
+        </Label>
+
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints halignment="LEFT" hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="NEVER"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <Label text=":sort ">
+                <font>
+                    <Font name="System Bold"/>
+                </font>
+            </Label>
+            <Label text="Sort a wired stack." GridPane.columnIndex="1">
+                <padding>
+                    <Insets left="4.0"/>
+                </padding>
+            </Label>
+
+            <Label text=":up [amount=1]" GridPane.rowIndex="1">
+                <font>
+                    <Font name="System Bold"/>
+                </font>
+            </Label>
+            <Label text="Move a wired box up in the stack." GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <padding>
+                    <Insets left="4.0"/>
+                </padding>
+            </Label>
+
+            <Label text=":down [amount=1]" GridPane.rowIndex="2">
+                <font>
+                    <Font name="System Bold"/>
+                </font>
+            </Label>
+            <Label text="Move a wired box down in the stack." GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <padding>
+                    <Insets left="4.0"/>
+                </padding>
+            </Label>
+
+        </GridPane>
+
+        <GridPane>
+            <columnConstraints>
+                <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
+                <ColumnConstraints hgrow="ALWAYS"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
+            </rowConstraints>
+
+            <padding>
+                <Insets top="8.0"/>
+            </padding>
+            <CheckBox fx:id="commandsEnabledCheckbox" mnemonicParsing="false"/>
+            <Label text="Enable commands ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                <tooltip>
+                    <Tooltip text="Enables the commands that are shown above"/>
+                </tooltip>
+                <padding>
+                    <Insets bottom="4.0" right="4.0" left="4.0" top="4.0"/>
+                </padding>
+            </Label>
+            <CheckBox fx:id="sortOnActionEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Label text="Enable sort on action ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <tooltip>
+                    <Tooltip text="Automatically sort a stack when a box is added or removed"/>
+                </tooltip>
+                <padding>
+                    <Insets bottom="4.0" right="4.0" left="4.0" top="4.0"/>
+                </padding>
+            </Label>
+        </GridPane>
+    </VBox>
+</AnchorPane>
