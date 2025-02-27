@@ -18,7 +18,7 @@ When commands are enabled, you can use these command in the Habbo chat bar:
 - `:down [amount=1]` Click on a box in the stack you want to move down `[amount]` spaces.
 - `:up [amount=1]` Click on a box in the stack you want to move down `[amount]` spaces.
 
-> **Note:** `:down` and `:up` only move boxes of it's own type (e.g. a reaction box will only swap places with other reaction boxes). This is because
+> **Note:** `:down` and `:up` only move boxes of it's own type (e.g. a reaction box will only swap places with other reaction boxes). This is because this is a plugin for sorting the boxes based on type, so this is to keep it your stacks consistent.
 
 ## FAQ
 
