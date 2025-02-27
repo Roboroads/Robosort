@@ -46,17 +46,15 @@ jobs:
           java-package: 'jdk+fx'
           cache: 'maven'
 
-      - name: Grab G-Earth
+      - name: Install G-Earth into local maven repo
         run: |
-          gh release download ${{ GE_VERSION }} --output '.G-Earth/GE.zip' --pattern ${{ GE_ZIP }} --repo ${{ GE_REPO }}
+          gh release download $GE_VERSION --output '.G-Earth/GE.zip' --pattern $GE_ZIP --repo $GE_REPO
           unzip -d ./.G-Earth/ .G-Earth/GE.zip
+          mvn install:install-file -Dfile=.G-Earth/G-Earth.jar -DgroupId=G-Earth -DartifactId=G-Earth -Dversion=$GE_VERSION -Dpackaging=jar
+          mvn install:install-file -Dfile=.G-Earth/G-Earth.jar -DgroupId=G-Earth -DartifactId=G-Earth-Parent -Dversion=$GE_VERSION -Dpackaging=jar
+          rm -rf .G-Earth
 
-      - name: Install G-Earth
-        run: |
-          gh release download --output '.G-Earth/GE.zip' --pattern 'Linux.zip' --repo 'UnfamiliarLegacy/G-Earth'
-          unzip -d ./.G-Earth/ .G-Earth/GE.zip
-
-      - name: Build with Maven
+      - name: Build extension
         run: mvn -B package --file pom.xml
 
       - name: Make release folder
