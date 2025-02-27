@@ -47,6 +47,8 @@ jobs:
           cache: 'maven'
 
       - name: Install G-Earth into local maven repo
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           gh release download $GE_VERSION --output '.G-Earth/GE.zip' --pattern $GE_ZIP --repo $GE_REPO
           unzip -d ./.G-Earth/ .G-Earth/GE.zip
