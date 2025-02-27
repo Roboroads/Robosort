@@ -34,7 +34,7 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addClasspath>true</addClasspath>
-                            <mainClass>me.roboroads.robosort.Robosort</mainClass>
+                            <mainClass>me.roboroads.robosort.RobosortLauncher</mainClass>
                             <useUniqueVersions>false</useUniqueVersions>
                             <classpathPrefix>lib/</classpathPrefix>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
@@ -58,7 +58,7 @@
                     <outputDirectory>${project.build.directory}/bin</outputDirectory>
                     <archive>
                         <manifest>
-                            <mainClass>me.roboroads.robosort.Robosort</mainClass>
+                            <mainClass>me.roboroads.robosort.RobosortLauncher</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
