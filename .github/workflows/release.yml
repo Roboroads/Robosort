@@ -98,4 +98,4 @@ jobs:
       - name: Upload Release Artifact
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ./Robosort-${{ needs.release-please.outputs.tag_name }}.zip
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ./release/Robosort-${{ needs.release-please.outputs.tag_name }}.zip
