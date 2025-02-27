@@ -18,6 +18,11 @@ public class Mover {
 
     private Mover(Robosort ext) {
         this.ext = ext;
+
+        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> queue.clear());
+        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> queue.clear());
+        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> queue.clear());
+
         processQueue();
     }
 
