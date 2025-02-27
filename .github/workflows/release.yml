@@ -8,6 +8,11 @@ permissions:
   contents: write
   pull-requests: write
 
+env:
+  GE_REPO: 'UnfamiliarLegacy/G-Earth'
+  GE_VERSION: '1.5.4-beta-10'
+  GE_ZIP: 'Linux.zip'
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
@@ -37,7 +42,7 @@ jobs:
 
       - name: Get current datetime
         id: datetime
-        run: echo "::set-output name=datetime::$(date +'%d-%m-%Y %H:%M:%S')"
+        run: echo "datetime=$(date +'%d-%m-%Y %H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Replace %%UPDATED_AT%%
         uses: jacobtomlinson/gha-find-replace@3.0.5
@@ -54,7 +59,17 @@ jobs:
           java-package: 'jdk+fx'
           cache: 'maven'
 
-      - name: Build with Maven
+      - name: Install G-Earth into local maven repo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download $GE_VERSION --output '.G-Earth/GE.zip' --pattern $GE_ZIP --repo $GE_REPO
+          unzip -d ./.G-Earth/ .G-Earth/GE.zip
+          mvn install:install-file -Dfile=.G-Earth/G-Earth.jar -DgroupId=G-Earth -DartifactId=G-Earth -Dversion=$GE_VERSION -Dpackaging=jar
+          mvn install:install-file -Dfile=.G-Earth/G-Earth.jar -DgroupId=G-Earth -DartifactId=G-Earth-Parent -Dversion=$GE_VERSION -Dpackaging=jar
+          rm -rf .G-Earth
+
+      - name: Build extension
         run: mvn -B package --file pom.xml
 
       - name: Make release folder
@@ -69,7 +84,7 @@ jobs:
 
       - name: Collect G-ExtensionStore dependencies
         run: |
-          cp extension.zip release/extension.zip
+          cp target/bin/extension.zip release/extension.zip
           cp extension.json release/extension.json
           cp assets/icon.png release/icon.png
 
