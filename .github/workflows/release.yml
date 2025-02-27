@@ -1,0 +1,86 @@
+name: Release
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      released: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: "${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}"
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+
+  upload-release:
+    needs:
+      - release-please
+    if: needs.release-please.outputs.released
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace %%VERSION%%
+        uses: jacobtomlinson/gha-find-replace@3
+        with:
+          find: "%%VERSION%%"
+          replace: "${{ needs.release-please.outputs.version }}"
+          regex: false
+
+      - name: Get current datetime
+        id: datetime
+        run: echo "::set-output name=datetime::$(date +'%d-%m-%Y %H:%M:%S')"
+
+      - name: Replace %%UPDATED_AT%%
+        uses: jacobtomlinson/gha-find-replace@3
+        with:
+          find: "%%UPDATED_AT%%"
+          replace: "${{ steps.datetime.outputs.datetime }}"
+          regex: false
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'oracle'
+          java-version: 8
+          java-package: 'jdk+fx'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Make release folder
+        run: mkdir -p release
+
+      - name: Create extension.zip
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'extension.zip'
+          directory: 'target/bin'
+
+      - name: Collect G-ExtensionStore dependencies
+        run: |
+          cp extension.zip release/extension.zip
+          cp extension.json release/extension.json
+          cp assets/icon.png release/icon.png
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'Robosort-${{ needs.release-please.outputs.tag_name }}.zip'
+          directory: 'release'
+
+      - name: Upload Release Artifact
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload ${{ needs.release-please.outputs.tag_name }} ./Robosort-${{ needs.release-please.outputs.tag_name }}.zip

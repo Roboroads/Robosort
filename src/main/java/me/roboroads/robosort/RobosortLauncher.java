@@ -11,7 +11,8 @@ public class RobosortLauncher extends ThemedExtensionFormCreator {
 
     @Override
     protected String getTitle() {
-        return "Robosort 1.0.0";
+        // %%VERSION%% will be replaced by the Github Actions workflow
+        return "Robosort %%VERSION%%";
     }
 
     @Override

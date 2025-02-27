@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 @ExtensionInfo(
   Title = "Robosort",
   Description = "Automatically sort your wired stacks.",
-  Version = "1.0",
+  // %%VERSION%% will be replaced by the Github Actions workflow
+  Version = "%%VERSION%%",
   Author = "Roboroads"
 )
 public class Robosort extends ExtensionForm {

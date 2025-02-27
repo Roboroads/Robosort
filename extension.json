@@ -10,7 +10,7 @@
       "twitter": "RoboroadsHabbo"
     }
   ],
-  "version": "1.0.0",
+  "version": "%%VERSION%%",
   "categories": [
     "Building"
   ],
@@ -46,7 +46,7 @@
       "Flash"
     ]
   },
-  "submissionDate": "27-02-2025 17:00:00",
-  "updateDate": "27-02-2025 17:00:00",
+  "submissionDate": "27-02-2025 23:00:00",
+  "updateDate": "%%UPDATED_AT%%",
   "isOutdated": false
 }
