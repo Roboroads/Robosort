@@ -13,7 +13,7 @@
     {
       "type": "chore",
       "section": "Miscellaneous",
-      "hidden": false
+      "hidden": true
     },
     {
       "type": "perf",
@@ -33,11 +33,6 @@
     {
       "type": "style",
       "section": "Styles",
-      "hidden": true
-    },
-    {
-      "type": "chore",
-      "section": "Miscellaneous Chores",
       "hidden": true
     },
     {
