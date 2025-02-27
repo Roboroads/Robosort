@@ -71,7 +71,7 @@ jobs:
 
       - name: Collect G-ExtensionStore dependencies
         run: |
-          cp extension.zip release/extension.zip
+          cp target/bin/extension.zip release/extension.zip
           cp extension.json release/extension.json
           cp assets/icon.png release/icon.png
 
