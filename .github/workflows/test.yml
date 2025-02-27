@@ -1,0 +1,83 @@
+name: TEST
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  GE_REPO: 'UnfamiliarLegacy/G-Earth'
+  GE_VERSION: '1.5.4-beta-10'
+  GE_ZIP: 'Linux.zip'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Replace %%VERSION%%
+        uses: jacobtomlinson/gha-find-replace@3.0.5
+        with:
+          find: "%%VERSION%%"
+          replace: "1.0.0"
+          regex: false
+
+      - name: Get current datetime
+        id: datetime
+        run: echo "::set-output name=datetime::$(date +'%d-%m-%Y %H:%M:%S')"
+
+      - name: Replace %%UPDATED_AT%%
+        uses: jacobtomlinson/gha-find-replace@3.0.5
+        with:
+          find: "%%UPDATED_AT%%"
+          replace: "${{ steps.datetime.outputs.datetime }}"
+          regex: false
+
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: 8
+          java-package: 'jdk+fx'
+          cache: 'maven'
+
+      - name: Grab G-Earth
+        run: |
+          gh release download ${{ GE_VERSION }} --output '.G-Earth/GE.zip' --pattern ${{ GE_ZIP }} --repo ${{ GE_REPO }}
+          unzip -d ./.G-Earth/ .G-Earth/GE.zip
+
+      - name: Install G-Earth
+        run: |
+          gh release download --output '.G-Earth/GE.zip' --pattern 'Linux.zip' --repo 'UnfamiliarLegacy/G-Earth'
+          unzip -d ./.G-Earth/ .G-Earth/GE.zip
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Make release folder
+        run: mkdir -p release
+
+      - name: Create extension.zip
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'extension.zip'
+          directory: 'target/bin'
+
+      - name: Collect G-ExtensionStore dependencies
+        run: |
+          cp extension.zip release/extension.zip
+          cp extension.json release/extension.json
+          cp assets/icon.png release/icon.png
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@0.7.6
+        with:
+          type: 'zip'
+          filename: 'Robosort-v1.0.0.zip'
+          directory: 'release'
