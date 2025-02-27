@@ -112,20 +112,20 @@ public class Robosort extends ExtensionForm {
         }
 
         int furniId = hMessage.getPacket().readInteger();
-        WiredFurni wiredFunri = wiredState.wired.get(furniId);
-        if (wiredFunri == null) {
+        WiredFurni wiredFurni = wiredState.getCurrent(furniId);
+        if (wiredFurni == null) {
             return;
         }
 
         switch (commandState) {
             case SORT_COMMAND:
-                sort(wiredFunri.floorItem.getTile().getX(), wiredFunri.floorItem.getTile().getY());
+                sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
                 break;
             case UP_COMMAND:
-                moveUp(wiredFunri, commandArgument);
+                moveUp(wiredFurni, commandArgument);
                 break;
             case DOWN_COMMAND:
-                moveDown(wiredFunri, commandArgument);
+                moveDown(wiredFurni, commandArgument);
                 break;
         }
 
@@ -140,16 +140,28 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Sort on action">
     private void handleObjectAddAndUpdate(HMessage hMessage, LocalDateTime lastAction) {
+        System.out.println("Handling object add/update");
         long msDiff = Duration.between(lastAction, LocalDateTime.now()).toMillis();
-        if (sortOnActionEnabled() && checkCanMove(false) && msDiff < 500) {
+        if (sortOnActionEnabled() && checkCanMove(true) && msDiff < 500) {
+            System.out.println("Current user made change, checking..");
             HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
             WiredFurni.WiredBoxType wiredBoxType = WiredFurni.WiredBoxType.fromFurniName(furniDataTools.getFloorItemName(floorItem.getTypeId()));
             if (wiredBoxType != null) {
+                System.out.println("It's a wired box! Starting sort..");
                 new Timer().schedule(
                   new TimerTask() {
                       @Override
                       public void run() {
                           sort(floorItem.getTile().getX(), floorItem.getTile().getY());
+                          System.out.println("Enqueued sort for new position!");
+
+                          WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
+                          if (previousPosition != null
+                            && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
+                                  || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
+                              sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
+                              System.out.println("Enqueued sort for old position!");
+                          }
                       }
                   }, 10
                 );
@@ -166,17 +178,13 @@ public class Robosort extends ExtensionForm {
         if (sortOnActionEnabled() && checkCanMove(false) && msDiff < 500) {
             HPacket packet = hMessage.getPacket();
             int furniId = Integer.parseInt(packet.readString());
-            WiredFurni wiredFurni = wiredState.wired.get(furniId);
-            if (wiredFurni == null) {
-                wiredFurni = wiredState.removedWired.get(furniId);
-            }
+            WiredFurni wiredFurni = wiredState.get(furniId);
             if (wiredFurni != null) {
-                WiredFurni finalWiredFurni = wiredFurni;
                 new Timer().schedule(
                   new TimerTask() {
                       @Override
                       public void run() {
-                          sort(finalWiredFurni.floorItem.getTile().getX(), finalWiredFurni.floorItem.getTile().getY());
+                          sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
                       }
                   }, 10
                 );
@@ -187,7 +195,7 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Utilities">
     private boolean checkCanMove(boolean callOut) {
-        if (wiredState.wired.isEmpty()) {
+        if (!wiredState.isReady()) {
             if (callOut) {
                 sendChat("There are no wired boxes in the room - re-enter the room if this is an error.");
             }

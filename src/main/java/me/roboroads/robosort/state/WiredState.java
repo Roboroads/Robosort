@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 public class WiredState {
     private static WiredState instance;
     private final Robosort ext;
-    public Map<Integer, WiredFurni> wired;
-    public Map<Integer, WiredFurni> removedWired;
+    private Map<Integer, WiredFurni> currentWired;
+    private Map<Integer, WiredFurni> previousWired;
 
     private WiredState(Robosort ext) {
         reset();
@@ -36,8 +36,8 @@ public class WiredState {
     }
 
     private void reset() {
-        wired = new HashMap<>();
-        removedWired = new HashMap<>();
+        currentWired = new HashMap<>();
+        previousWired = new HashMap<>();
     }
 
     private void handleObjects(HMessage hMessage) {
@@ -53,9 +53,9 @@ public class WiredState {
     private void handleObjectRemove(HMessage hMessage) {
         HPacket packet = hMessage.getPacket();
         int furniId = Integer.parseInt(packet.readString());
-        WiredFurni removedWired = wired.remove(furniId);
+        WiredFurni removedWired = currentWired.remove(furniId);
         if (removedWired != null) {
-            this.removedWired.put(furniId, removedWired);
+            this.previousWired.put(furniId, removedWired);
         }
     }
 
@@ -130,12 +130,17 @@ public class WiredState {
         WiredFurni.WiredBoxType wiredBoxType = WiredFurni.WiredBoxType.fromFurniName(ext.furniDataTools.getFloorItemName(floorItem.getTypeId()));
 
         if (wiredBoxType != null) {
-            wired.put(floorItem.getId(), new WiredFurni(floorItem, wiredBoxType));
+            WiredFurni currentWiredFurni = currentWired.get(floorItem.getId());
+            if (currentWiredFurni != null) {
+                previousWired.put(floorItem.getId(), currentWiredFurni);
+            }
+
+            currentWired.put(floorItem.getId(), new WiredFurni(floorItem, wiredBoxType));
         }
     }
 
     private void processMove(int furniId, int newX, int newY, String newZ) {
-        WiredFurni wiredFurni = wired.get(furniId);
+        WiredFurni wiredFurni = currentWired.get(furniId);
         if (wiredFurni != null) {
             wiredFurni.floorItem.setTile(new HPoint(newX, newY, Double.parseDouble(newZ)));
         }
@@ -158,10 +163,30 @@ public class WiredState {
     }
 
     public List<WiredFurni> wiredOnTile(int x, int y) {
-        return wired.values()
+        return currentWired.values()
           .stream()
           .filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y)
           .sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ()))
           .collect(Collectors.toList());
+    }
+
+    public WiredFurni get(int id) {
+        WiredFurni wiredFurni = currentWired.get(id);
+        if (wiredFurni == null) {
+            wiredFurni = previousWired.get(id);
+        }
+        return wiredFurni;
+    }
+
+    public WiredFurni getCurrent(int id) {
+        return currentWired.get(id);
+    }
+
+    public WiredFurni getPrevious(int id) {
+        return previousWired.get(id);
+    }
+
+    public boolean isReady() {
+        return !currentWired.isEmpty();
     }
 }
