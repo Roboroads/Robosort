@@ -8,8 +8,7 @@ import gearth.protocol.HPacket;
 import javafx.scene.control.CheckBox;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.furnidata.FurniDataTools;
-import me.roboroads.robosort.state.RoomPermissionState;
-import me.roboroads.robosort.state.WiredState;
+import me.roboroads.robosort.state.*;
 import me.roboroads.robosort.util.Mover;
 
 import java.time.Duration;
@@ -29,6 +28,7 @@ public class Robosort extends ExtensionForm {
     public CheckBox sortOnActionEnabledCheckbox;
 
     public WiredState wiredState;
+    public FloorPlanState floorPlanState;
     public FurniDataTools furniDataTools;
     public RoomPermissionState roomPermissionState;
     public Mover mover;
@@ -43,9 +43,10 @@ public class Robosort extends ExtensionForm {
     @Override
     protected void initExtension() {
         onConnect((host, i, s1, s2, hClient) -> furniDataTools = new FurniDataTools(host));
-        wiredState = WiredState.initialize(this);
+        wiredState = WiredState.getInstance(this);
         mover = Mover.initialize(this);
-        roomPermissionState = RoomPermissionState.initialize(this);
+        roomPermissionState = RoomPermissionState.getInstance(this);
+        floorPlanState = FloorPlanState.getInstance(this);
 
         furniRemoved = LocalDateTime.now().minusSeconds(1);
         furniAdded = LocalDateTime.now().minusSeconds(1);
@@ -141,27 +142,22 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Sort on action">
     private void handleObjectAddAndUpdate(HMessage hMessage, LocalDateTime lastAction) {
-        System.out.println("Handling object add/update");
         long msDiff = Duration.between(lastAction, LocalDateTime.now()).toMillis();
-        if (sortOnActionEnabled() && checkCanMove(true) && msDiff < 500) {
-            System.out.println("Current user made change, checking..");
+        if (sortOnActionEnabled() && checkCanMove(false) && msDiff < 500) {
             HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
             WiredFurni.WiredBoxType wiredBoxType = WiredFurni.WiredBoxType.fromFurniName(furniDataTools.getFloorItemName(floorItem.getTypeId()));
             if (wiredBoxType != null) {
-                System.out.println("It's a wired box! Starting sort..");
                 new Timer().schedule(
                   new TimerTask() {
                       @Override
                       public void run() {
                           sort(floorItem.getTile().getX(), floorItem.getTile().getY());
-                          System.out.println("Enqueued sort for new position!");
 
                           WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
                           if (previousPosition != null
                             && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
                                   || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
                               sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
-                              System.out.println("Enqueued sort for old position!");
                           }
                       }
                   }, 10
@@ -196,9 +192,16 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Utilities">
     private boolean checkCanMove(boolean callOut) {
+        if (!floorPlanState.isReady()) {
+            if (callOut) {
+                sendChat("Floorplan is not loaded - re-enter the room to load it.");
+            }
+            return false;
+        }
+
         if (!wiredState.isReady()) {
             if (callOut) {
-                sendChat("There are no wired boxes in the room - re-enter the room if this is an error.");
+                sendChat("There are no wired boxes in the room - re-enter the room if you think that's false.");
             }
             return false;
         }
@@ -231,7 +234,7 @@ public class Robosort extends ExtensionForm {
           .sorted(Comparator.comparingInt(wiredFurni -> wiredFurni.wiredBoxType.sortNumber))
           .collect(Collectors.toList());
 
-        int currentAltitude = 0;
+        int currentAltitude = floorPlanState.getTileHeight(x, y) * 100;
         for (WiredFurni wiredFurni : stackState) {
             int currentZ = (int) (wiredFurni.floorItem.getTile().getZ() * 100);
             if (Math.abs(currentZ - currentAltitude) > 1) { // Floating point precision makes sometimes 1 unit difference, we can ignore that

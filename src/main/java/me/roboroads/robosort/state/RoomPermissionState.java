@@ -3,6 +3,10 @@ package me.roboroads.robosort.state;
 import gearth.protocol.HMessage;
 import me.roboroads.robosort.Robosort;
 
+/**
+ * Gracefully "yoinked" from G-Presets
+ * <a href="https://github.com/sirjonasxx/G-Presets/blob/master/src/main/java/game/RoomPermissions.java">Source</a>
+ */
 public class RoomPermissionState {
     private static RoomPermissionState instance;
     private final Robosort ext;
@@ -39,7 +43,7 @@ public class RoomPermissionState {
         canMoveFurni = false;
     }
 
-    public static synchronized RoomPermissionState getInstance() {
+    public static RoomPermissionState getInstance() {
         if (instance == null) {
             throw new IllegalStateException("RoomPermissionState has not been initialized");
         }
@@ -47,7 +51,7 @@ public class RoomPermissionState {
         return instance;
     }
 
-    public static synchronized RoomPermissionState initialize(Robosort ext) {
+    public static RoomPermissionState getInstance(Robosort ext) {
         if (instance == null) {
             instance = new RoomPermissionState(ext);
         }

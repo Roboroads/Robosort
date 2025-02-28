@@ -10,6 +10,10 @@ import me.roboroads.robosort.data.WiredFurni;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Gracefully "yoinked" from G-Presets
+ * <a href="https://github.com/sirjonasxx/G-Presets/blob/master/src/main/java/game/FloorState.java">Source</a>
+ */
 public class WiredState {
     private static WiredState instance;
     private final Robosort ext;
@@ -146,7 +150,7 @@ public class WiredState {
         }
     }
 
-    public static synchronized WiredState getInstance() {
+    public static WiredState getInstance() {
         if (instance == null) {
             throw new IllegalStateException("RoomPermissionState has not been initialized");
         }
@@ -154,7 +158,7 @@ public class WiredState {
         return instance;
     }
 
-    public static synchronized WiredState initialize(Robosort ext) {
+    public static WiredState getInstance(Robosort ext) {
         if (instance == null) {
             instance = new WiredState(ext);
         }
