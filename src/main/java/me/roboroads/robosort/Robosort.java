@@ -44,7 +44,7 @@ public class Robosort extends ExtensionForm {
     protected void initExtension() {
         onConnect((host, i, s1, s2, hClient) -> furniDataTools = new FurniDataTools(host));
         wiredState = WiredState.getInstance(this);
-        mover = Mover.initialize(this);
+        mover = Mover.getInstance(this);
         roomPermissionState = RoomPermissionState.getInstance(this);
         floorPlanState = FloorPlanState.getInstance(this);
 

@@ -57,7 +57,7 @@ public class Mover {
         return instance;
     }
 
-    public static synchronized Mover initialize(Robosort ext) {
+    public static synchronized Mover getInstance(Robosort ext) {
         if (instance == null) {
             instance = new Mover(ext);
         }
