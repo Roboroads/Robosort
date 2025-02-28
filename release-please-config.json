@@ -58,7 +58,8 @@
   ],
   "packages": {
     ".": {
-      "release-type": "maven"
+      "release-type": "maven",
+      "skip-snapshot": true
     }
   }
 }
