@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Roboroads/Robosort/compare/v1.0.0...v1.0.1) (2025-02-28)
+
+
+### Changed and/or fixed
+
+* Sorting now takes the FloorPlan into account ([12469cd](https://github.com/Roboroads/Robosort/commit/12469cd46ccee9689e701d301bde0bea888380f5))
+
 ## 1.0.0 (2025-02-27)
 
 
