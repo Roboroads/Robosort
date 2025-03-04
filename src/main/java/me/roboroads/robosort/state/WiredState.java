@@ -5,6 +5,7 @@ import gearth.extensions.parsers.HPoint;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import me.roboroads.robosort.Robosort;
+import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.data.WiredFurni;
 
 import java.util.*;
@@ -131,7 +132,7 @@ public class WiredState {
     }
 
     private void maybeAdd(HFloorItem floorItem) {
-        WiredFurni.WiredBoxType wiredBoxType = WiredFurni.WiredBoxType.fromFurniName(ext.furniDataTools.getFloorItemName(floorItem.getTypeId()));
+        WiredBoxType wiredBoxType = WiredBoxType.fromFurniName(ext.furniDataTools.getFloorItemName(floorItem.getTypeId()));
 
         if (wiredBoxType != null) {
             WiredFurni currentWiredFurni = currentWired.get(floorItem.getId());
@@ -168,10 +169,10 @@ public class WiredState {
 
     public List<WiredFurni> wiredOnTile(int x, int y) {
         return currentWired.values()
-          .stream()
-          .filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y)
-          .sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ()))
-          .collect(Collectors.toList());
+                .stream()
+                .filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y)
+                .sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ()))
+                .collect(Collectors.toList());
     }
 
     public WiredFurni get(int id) {

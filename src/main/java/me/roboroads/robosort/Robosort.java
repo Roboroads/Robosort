@@ -6,9 +6,12 @@ import gearth.extensions.parsers.HFloorItem;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import javafx.scene.control.CheckBox;
+import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.furnidata.FurniDataTools;
-import me.roboroads.robosort.state.*;
+import me.roboroads.robosort.state.FloorPlanState;
+import me.roboroads.robosort.state.RoomPermissionState;
+import me.roboroads.robosort.state.WiredState;
 import me.roboroads.robosort.util.Mover;
 
 import java.time.Duration;
@@ -17,11 +20,11 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @ExtensionInfo(
-  Title = "Robosort",
-  Description = "Automatically sort your wired stacks.",
-  // %%VERSION%% will be replaced by the Github Actions workflow
-  Version = "%%VERSION%%",
-  Author = "Roboroads"
+        Title = "Robosort",
+        Description = "Automatically sort your wired stacks.",
+        // %%VERSION%% will be replaced by the Github Actions workflow
+        Version = "%%VERSION%%",
+        Author = "Roboroads"
 )
 public class Robosort extends ExtensionForm {
     public CheckBox commandsEnabledCheckbox;
@@ -145,22 +148,22 @@ public class Robosort extends ExtensionForm {
         long msDiff = Duration.between(lastAction, LocalDateTime.now()).toMillis();
         if (sortOnActionEnabled() && checkCanMove(false) && msDiff < 500) {
             HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
-            WiredFurni.WiredBoxType wiredBoxType = WiredFurni.WiredBoxType.fromFurniName(furniDataTools.getFloorItemName(floorItem.getTypeId()));
+            WiredBoxType wiredBoxType = WiredBoxType.fromFurniName(furniDataTools.getFloorItemName(floorItem.getTypeId()));
             if (wiredBoxType != null) {
                 new Timer().schedule(
-                  new TimerTask() {
-                      @Override
-                      public void run() {
-                          sort(floorItem.getTile().getX(), floorItem.getTile().getY());
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                sort(floorItem.getTile().getX(), floorItem.getTile().getY());
 
-                          WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
-                          if (previousPosition != null
-                            && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
-                                  || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
-                              sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
-                          }
-                      }
-                  }, 10
+                                WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
+                                if (previousPosition != null
+                                        && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
+                                        || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
+                                    sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
+                                }
+                            }
+                        }, 10
                 );
             }
         }
@@ -178,12 +181,12 @@ public class Robosort extends ExtensionForm {
             WiredFurni wiredFurni = wiredState.get(furniId);
             if (wiredFurni != null) {
                 new Timer().schedule(
-                  new TimerTask() {
-                      @Override
-                      public void run() {
-                          sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
-                      }
-                  }, 10
+                        new TimerTask() {
+                            @Override
+                            public void run() {
+                                sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
+                            }
+                        }, 10
                 );
             }
         }
@@ -231,8 +234,8 @@ public class Robosort extends ExtensionForm {
     //<editor-fold desc="Functionality">
     private void sort(int x, int y) {
         List<WiredFurni> stackState = wiredState.wiredOnTile(x, y).stream()
-          .sorted(Comparator.comparingInt(wiredFurni -> wiredFurni.wiredBoxType.sortNumber))
-          .collect(Collectors.toList());
+                .sorted(Comparator.comparingInt(wiredFurni -> wiredFurni.wiredBoxType.sortNumber))
+                .collect(Collectors.toList());
 
         int currentAltitude = floorPlanState.getTileHeight(x, y) * 100;
         for (WiredFurni wiredFurni : stackState) {
@@ -246,8 +249,8 @@ public class Robosort extends ExtensionForm {
 
     private void moveUp(WiredFurni wiredFurni, int amount) {
         List<WiredFurni> stackState = wiredState.wiredOnTile(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY())
-          .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
-          .collect(Collectors.toList());
+                .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
+                .collect(Collectors.toList());
 
         int index = stackState.indexOf(wiredFurni);
         List<WiredFurni> movingBoxes = stackState.subList(index, Math.min(index + amount + 1, stackState.size()));
@@ -266,8 +269,8 @@ public class Robosort extends ExtensionForm {
 
     private void moveDown(WiredFurni wiredFurni, int amount) {
         List<WiredFurni> stackState = wiredState.wiredOnTile(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY())
-          .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
-          .collect(Collectors.toList());
+                .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
+                .collect(Collectors.toList());
 
         int index = stackState.indexOf(wiredFurni);
         List<WiredFurni> movingBoxes = stackState.subList(Math.max(0, index - amount), index + 1);
