@@ -4,7 +4,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8.0.421" fx:controller="me.roboroads.robosort.Robosort">
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.roboroads.robosort.Robosort">
     <padding>
         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0"/>
     </padding>
@@ -92,7 +92,7 @@
                     <Tooltip text="Enables the commands that are shown above"/>
                 </tooltip>
                 <padding>
-                    <Insets bottom="4.0" right="4.0" left="4.0" top="4.0"/>
+                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
             <CheckBox fx:id="sortOnActionEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
@@ -101,9 +101,15 @@
                     <Tooltip text="Automatically sort a stack when a box is added or removed"/>
                 </tooltip>
                 <padding>
-                    <Insets bottom="4.0" right="4.0" left="4.0" top="4.0"/>
+                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
         </GridPane>
+        <Label text="Wired box sorting order:"/>
+        <ListView fx:id="sortOrderListView">
+            <padding>
+                <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+            </padding>
+        </ListView>
     </VBox>
 </AnchorPane>

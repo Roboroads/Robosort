@@ -3,32 +3,39 @@ package me.roboroads.robosort;
 import gearth.extensions.ExtensionForm;
 import gearth.extensions.ExtensionInfo;
 import gearth.extensions.parsers.HFloorItem;
+import gearth.misc.Cacher;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
-import javafx.scene.control.CheckBox;
+import javafx.collections.*;
+import javafx.scene.control.*;
+import javafx.scene.input.*;
 import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.furnidata.FurniDataTools;
-import me.roboroads.robosort.state.FloorPlanState;
-import me.roboroads.robosort.state.RoomPermissionState;
-import me.roboroads.robosort.state.WiredState;
+import me.roboroads.robosort.state.*;
 import me.roboroads.robosort.util.Mover;
+import me.roboroads.robosort.util.Util;
 
+import java.io.File;
+import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @ExtensionInfo(
-        Title = "Robosort",
-        Description = "Automatically sort your wired stacks.",
-        // %%VERSION%% will be replaced by the Github Actions workflow
-        Version = "%%VERSION%%",
-        Author = "Roboroads"
+  Title = "Robosort",
+  Description = "Automatically sort your wired stacks.",
+  // %%VERSION%% will be replaced by the GitHub Actions workflow
+  Version = "%%VERSION%%",
+  Author = "Roboroads"
 )
 public class Robosort extends ExtensionForm {
     public CheckBox commandsEnabledCheckbox;
     public CheckBox sortOnActionEnabledCheckbox;
+    public ListView<WiredBoxType> sortOrderListView;
+
+    private ObservableList<WiredBoxType> sortOrder;
 
     public WiredState wiredState;
     public FloorPlanState floorPlanState;
@@ -55,6 +62,9 @@ public class Robosort extends ExtensionForm {
         furniAdded = LocalDateTime.now().minusSeconds(1);
         furniMoved = LocalDateTime.now().minusSeconds(1);
 
+        initializeCache();
+        initializeSortOrderListView();
+
         // For commands
         intercept(HMessage.Direction.TOSERVER, "Chat", this::handleChat);
         intercept(HMessage.Direction.TOSERVER, "ClickFurni", this::handleClickFurni);
@@ -70,6 +80,101 @@ public class Robosort extends ExtensionForm {
         intercept(HMessage.Direction.TOCLIENT, "ObjectAdd", m -> handleObjectAddAndUpdate(m, furniAdded));
         intercept(HMessage.Direction.TOCLIENT, "ObjectRemove", this::handleObjectRemove);
         intercept(HMessage.Direction.TOCLIENT, "ObjectUpdate", m -> handleObjectAddAndUpdate(m, furniMoved));
+    }
+
+    private void initializeSortOrderListView() {
+        // Get all options from cache, add missing values and set as observable list
+        List<WiredBoxType> cachedSortOrder = Optional.ofNullable(Cacher.getList("sortOrder")).orElse(new ArrayList<>())
+          .stream().map(o -> WiredBoxType.valueOf((String) o)).collect(Collectors.toList());
+        // Add missing values
+        WiredBoxType.defaultValues().stream().filter(o -> !cachedSortOrder.contains(o)).forEach(cachedSortOrder::add);
+
+        // Reverse the list to make it more intuitive
+        sortOrder = FXCollections.observableArrayList(Util.reverse(cachedSortOrder));
+        sortOrderListView.setItems(sortOrder);
+
+        // Save the sort order to cache when it changes, save it in un-reversed order
+        sortOrder.addListener((ListChangeListener<? super WiredBoxType>) o -> Cacher.put("sortOrder", Util.reverse(sortOrder)));
+
+        // make sort box as big as the items
+        sortOrderListView.setPrefHeight(sortOrder.size() * 24 + 4);
+
+        // Enable drag and drop for reordering
+        sortOrderListView.setCellFactory(lv -> {
+            ListCell<WiredBoxType> cell = new ListCell<WiredBoxType>() {
+                @Override
+                protected void updateItem(WiredBoxType item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setText(empty ? null : item.toString());
+                }
+            };
+
+            cell.setOnDragDetected(event -> {
+                if (!cell.isEmpty()) {
+                    Dragboard db = cell.startDragAndDrop(TransferMode.MOVE);
+                    ClipboardContent content = new ClipboardContent();
+                    content.putString(Integer.toString(cell.getIndex()));
+                    db.setContent(content);
+                    event.consume();
+                }
+            });
+
+            cell.setOnDragOver(event -> {
+                if (event.getGestureSource() != cell &&
+                  event.getDragboard().hasString()) {
+                    event.acceptTransferModes(TransferMode.MOVE);
+                    event.consume();
+                }
+            });
+
+            cell.setOnDragEntered(event -> {
+                if (event.getGestureSource() != cell &&
+                  event.getDragboard().hasString()) {
+                    cell.setOpacity(0.3);
+                }
+            });
+
+            cell.setOnDragExited(event -> {
+                if (event.getGestureSource() != cell &&
+                  event.getDragboard().hasString()) {
+                    cell.setOpacity(1);
+                }
+            });
+
+            cell.setOnDragDropped(event -> {
+                Dragboard db = event.getDragboard();
+                boolean success = false;
+
+                if (db.hasString()) {
+                    int draggedIndex = Integer.parseInt(db.getString());
+                    int thisIndex = cell.getIndex();
+
+                    WiredBoxType item = sortOrder.remove(draggedIndex);
+                    sortOrder.add(thisIndex, item);
+
+                    sortOrderListView.getSelectionModel().select(thisIndex);
+
+                    success = true;
+                    event.consume();
+                }
+                event.setDropCompleted(success);
+            });
+
+            return cell;
+        });
+    }
+
+    private void initializeCache() {
+        File extDir = null;
+        try {
+            extDir = (new File(Robosort.class.getProtectionDomain().getCodeSource().getLocation().toURI())).getParentFile();
+            if (extDir.getName().equals("Extensions")) {
+                extDir = extDir.getParentFile();
+            }
+        } catch (URISyntaxException ignored) {
+        }
+
+        Cacher.setCacheDir(extDir + File.separator + "Cache");
     }
 
     //<editor-fold desc="Command handling">
@@ -148,22 +253,23 @@ public class Robosort extends ExtensionForm {
         long msDiff = Duration.between(lastAction, LocalDateTime.now()).toMillis();
         if (sortOnActionEnabled() && checkCanMove(false) && msDiff < 500) {
             HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
-            WiredBoxType wiredBoxType = WiredBoxType.fromFurniName(furniDataTools.getFloorItemName(floorItem.getTypeId()));
-            if (wiredBoxType != null) {
-                new Timer().schedule(
-                        new TimerTask() {
-                            @Override
-                            public void run() {
-                                sort(floorItem.getTile().getX(), floorItem.getTile().getY());
+            String furniClassName = furniDataTools.getFloorItemClassName(floorItem.getTypeId());
 
-                                WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
-                                if (previousPosition != null
-                                        && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
-                                        || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
-                                    sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
-                                }
-                            }
-                        }, 10
+            if (WiredFurni.isWiredFurni(furniClassName)) {
+                new Timer().schedule(
+                  new TimerTask() {
+                      @Override
+                      public void run() {
+                          sort(floorItem.getTile().getX(), floorItem.getTile().getY());
+
+                          WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
+                          if (previousPosition != null
+                            && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
+                                  || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
+                              sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
+                          }
+                      }
+                  }, 10
                 );
             }
         }
@@ -181,12 +287,12 @@ public class Robosort extends ExtensionForm {
             WiredFurni wiredFurni = wiredState.get(furniId);
             if (wiredFurni != null) {
                 new Timer().schedule(
-                        new TimerTask() {
-                            @Override
-                            public void run() {
-                                sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
-                            }
-                        }, 10
+                  new TimerTask() {
+                      @Override
+                      public void run() {
+                          sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
+                      }
+                  }, 10
                 );
             }
         }
@@ -233,9 +339,10 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Functionality">
     private void sort(int x, int y) {
+        List<WiredBoxType> unreversedSortOrder = Util.reverse(sortOrder);
         List<WiredFurni> stackState = wiredState.wiredOnTile(x, y).stream()
-                .sorted(Comparator.comparingInt(wiredFurni -> wiredFurni.wiredBoxType.sortNumber))
-                .collect(Collectors.toList());
+          .sorted(Comparator.comparingInt(wiredFurni -> unreversedSortOrder.indexOf(wiredFurni.wiredBoxType)))
+          .collect(Collectors.toList());
 
         int currentAltitude = floorPlanState.getTileHeight(x, y) * 100;
         for (WiredFurni wiredFurni : stackState) {
@@ -243,14 +350,14 @@ public class Robosort extends ExtensionForm {
             if (Math.abs(currentZ - currentAltitude) > 1) { // Floating point precision makes sometimes 1 unit difference, we can ignore that
                 mover.queue(wiredFurni.floorItem.getId(), currentAltitude);
             }
-            currentAltitude += wiredFurni.wiredBoxType.height;
+            currentAltitude += wiredFurni.height;
         }
     }
 
     private void moveUp(WiredFurni wiredFurni, int amount) {
         List<WiredFurni> stackState = wiredState.wiredOnTile(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY())
-                .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
-                .collect(Collectors.toList());
+          .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
+          .collect(Collectors.toList());
 
         int index = stackState.indexOf(wiredFurni);
         List<WiredFurni> movingBoxes = stackState.subList(index, Math.min(index + amount + 1, stackState.size()));
@@ -269,8 +376,8 @@ public class Robosort extends ExtensionForm {
 
     private void moveDown(WiredFurni wiredFurni, int amount) {
         List<WiredFurni> stackState = wiredState.wiredOnTile(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY())
-                .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
-                .collect(Collectors.toList());
+          .stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType)
+          .collect(Collectors.toList());
 
         int index = stackState.indexOf(wiredFurni);
         List<WiredFurni> movingBoxes = stackState.subList(Math.max(0, index - amount), index + 1);

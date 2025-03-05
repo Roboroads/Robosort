@@ -72,7 +72,7 @@ public class FurniDataTools {
         return isReady;
     }
 
-    public String getFloorItemName(int typeId) {
+    public String getFloorItemClassName(int typeId) {
         return typeIdToNameFloor.get(typeId);
     }
 
