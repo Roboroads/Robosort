@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.1](https://github.com/Roboroads/Robosort/compare/v1.1.0...v1.1.1) (2025-03-11)
+
+
+### Changed and/or fixed
+
+* Fixed commands being parsed even though the feature is turned off ([2f32943](https://github.com/Roboroads/Robosort/commit/2f32943956dddd21ba5e0e490b88459fa4937015))
+* Fixed extension crashing when typing only a space ([7070d23](https://github.com/Roboroads/Robosort/commit/7070d23fd7d095b62d200e4969da0ddc0c21fe49)), closes [#16](https://github.com/Roboroads/Robosort/issues/16)
+
 ## [1.1.0](https://github.com/Roboroads/Robosort/compare/v1.0.1...v1.1.0) (2025-03-05)
 
 
