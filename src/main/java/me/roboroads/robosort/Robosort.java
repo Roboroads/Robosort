@@ -187,11 +187,12 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Command handling">
     private void handleChat(HMessage hMessage) {
-        if (!commandsEnabled()) {
+        String text = hMessage.getPacket().readString();
+
+        if (!commandsEnabled() || !text.startsWith(":")) {
             return;
         }
 
-        String text = hMessage.getPacket().readString();
         String[] command = text.split(" ");
 
         List<String> availableCommands;
