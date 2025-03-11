@@ -6,13 +6,21 @@ import gearth.extensions.parsers.HFloorItem;
 import gearth.misc.Cacher;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
-import javafx.collections.*;
-import javafx.scene.control.*;
-import javafx.scene.input.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.furnidata.FurniDataTools;
-import me.roboroads.robosort.state.*;
+import me.roboroads.robosort.state.FloorPlanState;
+import me.roboroads.robosort.state.RoomPermissionState;
+import me.roboroads.robosort.state.WiredState;
 import me.roboroads.robosort.util.Mover;
 import me.roboroads.robosort.util.Util;
 
@@ -179,6 +187,10 @@ public class Robosort extends ExtensionForm {
 
     //<editor-fold desc="Command handling">
     private void handleChat(HMessage hMessage) {
+        if (!commandsEnabled()) {
+            return;
+        }
+
         String text = hMessage.getPacket().readString();
         String[] command = text.split(" ");
 
@@ -265,7 +277,7 @@ public class Robosort extends ExtensionForm {
                           WiredFurni previousPosition = wiredState.getPrevious(floorItem.getId());
                           if (previousPosition != null
                             && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX()
-                                  || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
+                            || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
                               sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
                           }
                       }
