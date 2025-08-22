@@ -16,6 +16,7 @@ public class WiredFurni {
         put("wf_xtra_filter_", WiredBoxType.FILTER);
         put("wf_cnd_", WiredBoxType.CONDITION);
         put("wf_xtra_", WiredBoxType.ADDON);
+        remove("wf_xtra_var_");
         put("wf_act_", WiredBoxType.EFFECT);
     }};
 
