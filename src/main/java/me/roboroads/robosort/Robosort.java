@@ -85,7 +85,7 @@ public class Robosort extends ExtensionForm {
         sortOrder.addListener((ListChangeListener<? super WiredBoxType>) o -> Cacher.put("sortOrder", Util.reverse(sortOrder)));
 
         // make sort box as big as the items
-        sortOrderListView.setPrefHeight(sortOrder.size() * 24 + 4);
+        sortOrderListView.setPrefHeight(sortOrder.size() * 28 + 4);
 
         // Enable drag and drop for reordering
         sortOrderListView.setCellFactory(lv -> {

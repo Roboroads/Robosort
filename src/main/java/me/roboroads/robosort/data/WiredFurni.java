@@ -2,26 +2,32 @@ package me.roboroads.robosort.data;
 
 import gearth.extensions.parsers.HFloorItem;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class WiredFurni {
-    private static final int BIG_BOX_HEIGHT = 100;
-    private static final int NORMAL_BOX_HEIGHT = 65;
-    private static final int SMALL_BOX_HEIGHT = 37;
+    private static final int SELECTOR_HEIGHT = 100;
+    private static final int DEFAULT_BOX_HEIGHT = 65;
+    private static final int ADDON_BOX_HEIGHT = 37;
+    private static final int VARIABLE_BOX_HEIGHT = 120;
+    private static final int VARIABLE_ADDON_BOX_HEIGHT = 75;
 
     private static final Map<String, WiredBoxType> furniClassPrefixTypeMap = new LinkedHashMap<String, WiredBoxType>() {{
         put("wf_trg_", WiredBoxType.TRIGGER);
         put("wf_slc_", WiredBoxType.SELECTOR);
         put("wf_xtra_filter_", WiredBoxType.FILTER);
         put("wf_cnd_", WiredBoxType.CONDITION);
+        put("wf_xtra_var_", WiredBoxType.VARIABLE_EXTRA);
+        put("wf_var_", WiredBoxType.VARIABLE);
         put("wf_xtra_", WiredBoxType.ADDON);
         put("wf_act_", WiredBoxType.EFFECT);
     }};
 
     private static final Map<String, ExceptionDetails> exceptions = new HashMap<String, ExceptionDetails>() {{
-        put("wf_xtra_text_output_variable", new ExceptionDetails(WiredBoxType.EFFECT, SMALL_BOX_HEIGHT));
-        put("wf_xtra_text_input_variable", new ExceptionDetails(WiredBoxType.EFFECT, SMALL_BOX_HEIGHT));
+        put("wf_xtra_text_output_variable", new ExceptionDetails(WiredBoxType.EFFECT, ADDON_BOX_HEIGHT));
+        put("wf_xtra_text_input_variable", new ExceptionDetails(WiredBoxType.EFFECT, ADDON_BOX_HEIGHT));
     }};
 
     public final HFloorItem floorItem;
@@ -48,11 +54,15 @@ public class WiredFurni {
         switch (this.wiredBoxType) {
             case SELECTOR:
             case FILTER:
-                return BIG_BOX_HEIGHT;
+                return SELECTOR_HEIGHT;
             case ADDON:
-                return SMALL_BOX_HEIGHT;
+                return ADDON_BOX_HEIGHT;
+            case VARIABLE:
+                return VARIABLE_BOX_HEIGHT;
+            case VARIABLE_EXTRA:
+                return VARIABLE_ADDON_BOX_HEIGHT;
             default:
-                return NORMAL_BOX_HEIGHT;
+                return DEFAULT_BOX_HEIGHT;
         }
     }
 
