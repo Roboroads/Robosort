@@ -77,12 +77,14 @@
             <columnConstraints>
                 <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
                 <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints hgrow="ALWAYS" minWidth="10.0" prefWidth="100.0"/>
                 <ColumnConstraints halignment="CENTER" hgrow="NEVER"/>
             </columnConstraints>
             <rowConstraints>
                 <!-- Header row -->
                 <RowConstraints valignment="CENTER" vgrow="NEVER"/>
                 <!-- Features rows -->
+                <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
                 <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
                 <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
             </rowConstraints>
@@ -92,7 +94,7 @@
             </padding>
 
             <!-- Column headers -->
-            <Label text="Autostart" GridPane.columnIndex="2" GridPane.rowIndex="0">
+            <Label text="Autostart" GridPane.columnIndex="3" GridPane.rowIndex="0">
                 <font>
                     <Font name="System Bold"/>
                 </font>
@@ -111,7 +113,7 @@
                     <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
-            <CheckBox fx:id="commandsAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="2" GridPane.rowIndex="1">
+            <CheckBox fx:id="commandsAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="1">
                 <tooltip>
                     <Tooltip text="Enable this automatically on startup"/>
                 </tooltip>
@@ -127,11 +129,40 @@
                     <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
-            <CheckBox fx:id="sortOnActionAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="2" GridPane.rowIndex="2">
+            <CheckBox fx:id="sortOnActionAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="2">
                 <tooltip>
                     <Tooltip text="Enable this automatically on startup"/>
                 </tooltip>
             </CheckBox>
+
+            <!-- Forced direction row -->
+            <CheckBox fx:id="forcedDirectionEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+            <HBox spacing="6.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                <children>
+                    <Label text="Enable forced direction ⓘ"/>
+                </children>
+                <padding>
+                    <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
+                </padding>
+            </HBox>
+            <CheckBox fx:id="forcedDirectionAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="3" GridPane.rowIndex="3">
+                <tooltip>
+                    <Tooltip text="Enable this automatically on startup"/>
+                </tooltip>
+            </CheckBox>
+            <ChoiceBox fx:id="forcedDirectionChoiceBox" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <tooltip>
+                    <Tooltip text="Force rotation for newly placed wired boxes"/>
+                </tooltip>
+            </ChoiceBox>
+            <Label layoutX="282.0" layoutY="18.0" text="Setting" GridPane.columnIndex="2">
+                <font>
+                    <Font name="System Bold"/>
+                </font>
+                <padding>
+                    <Insets left="6.0" right="6.0"/>
+                </padding>
+            </Label>
         </GridPane>
         <Label text="Wired box sorting order:"/>
         <ListView fx:id="sortOrderListView">

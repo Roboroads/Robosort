@@ -7,6 +7,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.input.ClipboardContent;
@@ -44,7 +45,10 @@ public class Robosort extends ExtensionForm {
     public CheckBox sortOnActionEnabledCheckbox;
     public CheckBox commandsAutostartCheckbox;
     public CheckBox sortOnActionAutostartCheckbox;
+    public CheckBox forcedDirectionEnabledCheckbox;
+    public CheckBox forcedDirectionAutostartCheckbox;
     public ListView<WiredBoxType> sortOrderListView;
+    public ChoiceBox<ForcedDirection> forcedDirectionChoiceBox;
 
     private ObservableList<WiredBoxType> sortOrder;
 
@@ -53,6 +57,18 @@ public class Robosort extends ExtensionForm {
     public FurniDataTools furniDataTools;
     public RoomPermissionState roomPermissionState;
     public Mover mover;
+
+    public enum ForcedDirection {
+        LEFT, RIGHT;
+
+        public static ForcedDirection tryParse(String name, ForcedDirection defaultValue) {
+            try {
+                return Robosort.ForcedDirection.valueOf(name);
+            } catch (IllegalArgumentException | NullPointerException e) {
+                return defaultValue;
+            }
+        }
+    }
 
     @Override
     protected void initExtension() {
@@ -65,56 +81,56 @@ public class Robosort extends ExtensionForm {
         // Initialize shared utility singleton
         HabboUtil.init(this);
 
+        // Initialize settings and cache
         initializeCache();
-        initializeAutostartSettings();
+        initializeForcedDirectionSettings();
         initializeSortOrderListView();
+        initializeAutostartSettings();
 
         // Initialize new handlers (they register their own interceptions)
         new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this)));
         new SortOnAction(this);
+        new me.roboroads.robosort.actions.ForcedDirection(this);
+    }
+
+    private void initializeForcedDirectionSettings() {
+        // Initialize choice box options
+        forcedDirectionChoiceBox.setItems(FXCollections.observableArrayList(Robosort.ForcedDirection.values()));
+
+        // Restore cached value
+        String cached = (String) Cacher.get("forcedDirection.setting");
+        ForcedDirection cachedDirection = Robosort.ForcedDirection.tryParse(cached, Robosort.ForcedDirection.LEFT);
+        forcedDirectionChoiceBox.setValue(cachedDirection);
+
+        // Persist selection changes and remember last non-off
+        forcedDirectionChoiceBox.getSelectionModel().selectedItemProperty().addListener((obs, oldV, newV) -> {
+            Cacher.put("forcedDirection.setting", newV.name());
+        });
     }
 
     private void initializeAutostartSettings() {
         // Read cached autostart values and apply
-        boolean commandsAuto = getCachedBool("autostart_commands", false);
-        boolean sortOnActionAuto = getCachedBool("autostart_sortOnAction", false);
+        boolean commandsAuto = (boolean) Optional.ofNullable(Cacher.get("commands.autostart")).orElse(false);
+        boolean sortOnActionAuto = (boolean) Optional.ofNullable(Cacher.get("sortOnAction.autostart")).orElse(false);
+        boolean forcedDirectionAuto = (boolean) Optional.ofNullable(Cacher.get("forcedDirection.autostart")).orElse(false);
 
-        if (commandsAutostartCheckbox != null) {
-            commandsAutostartCheckbox.setSelected(commandsAuto);
-            commandsAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("autostart_commands", newV));
-        }
-        if (sortOnActionAutostartCheckbox != null) {
-            sortOnActionAutostartCheckbox.setSelected(sortOnActionAuto);
-            sortOnActionAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("autostart_sortOnAction", newV));
-        }
+        commandsAutostartCheckbox.setSelected(commandsAuto);
+        commandsAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("commands.autostart", newV));
+        sortOnActionAutostartCheckbox.setSelected(sortOnActionAuto);
+        sortOnActionAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("sortOnAction.autostart", newV));
+        forcedDirectionAutostartCheckbox.setSelected(forcedDirectionAuto);
+        forcedDirectionAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("forcedDirection.autostart", newV));
 
         // If autostart is enabled, enable the corresponding features on startup
-        if (commandsAuto && commandsEnabledCheckbox != null) {
+        if (commandsAuto) {
             commandsEnabledCheckbox.setSelected(true);
         }
-        if (sortOnActionAuto && sortOnActionEnabledCheckbox != null) {
+        if (sortOnActionAuto) {
             sortOnActionEnabledCheckbox.setSelected(true);
         }
-    }
-
-    private boolean getCachedBool(String key, boolean def) {
-        Object val;
-        try {
-            val = gearth.misc.Cacher.get(key);
-        } catch (Throwable t) {
-            // In case older Cacher versions don't have generic get, fall back to default
-            return def;
+        if (forcedDirectionAuto) {
+            forcedDirectionEnabledCheckbox.setSelected(true);
         }
-        if (val == null) {
-            return def;
-        }
-        if (val instanceof Boolean) {
-            return (Boolean) val;
-        }
-        if (val instanceof Number) {
-            return ((Number) val).intValue() != 0;
-        }
-        return Boolean.parseBoolean(String.valueOf(val));
     }
 
     private void initializeSortOrderListView() {
@@ -214,5 +230,13 @@ public class Robosort extends ExtensionForm {
 
     public boolean sortOnActionEnabled() {
         return sortOnActionEnabledCheckbox.isSelected();
+    }
+
+    public boolean forcedDirectionEnabled() {
+        return forcedDirectionEnabledCheckbox.isSelected();
+    }
+
+    public ForcedDirection getForcedDirection() {
+        return forcedDirectionChoiceBox.getValue();
     }
 }
