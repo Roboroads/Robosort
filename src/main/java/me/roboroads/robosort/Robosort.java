@@ -13,12 +13,12 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import me.roboroads.robosort.actions.SortOnAction;
 import me.roboroads.robosort.commands.CommandHandler;
 import me.roboroads.robosort.commands.DownCommand;
 import me.roboroads.robosort.commands.SortCommand;
 import me.roboroads.robosort.commands.UpCommand;
 import me.roboroads.robosort.data.WiredBoxType;
+import me.roboroads.robosort.features.SortOnAction;
 import me.roboroads.robosort.furnidata.FurniDataTools;
 import me.roboroads.robosort.state.FloorPlanState;
 import me.roboroads.robosort.state.RoomPermissionState;
@@ -90,7 +90,7 @@ public class Robosort extends ExtensionForm {
         // Initialize new handlers (they register their own interceptions)
         new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this)));
         new SortOnAction(this);
-        new me.roboroads.robosort.actions.ForcedDirection(this);
+        new me.roboroads.robosort.features.ForcedDirection(this);
     }
 
     private void initializeForcedDirectionSettings() {
