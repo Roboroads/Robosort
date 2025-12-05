@@ -6,11 +6,13 @@ import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.Movement;
 
 import java.util.LinkedList;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Mover {
     private static final String ALTITUDE_VARIABLE_ID = "-123";
-    private static Mover instance;
+    private static Mover INSTANCE;
     private final Robosort ext;
 
     private final LinkedList<Movement> queue = new LinkedList<>();
@@ -28,41 +30,32 @@ public class Mover {
 
     private void processQueue() {
         ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-        executorService.scheduleAtFixedRate(
-          () -> {
-              Movement currentMovement;
-              synchronized (lock) {
-                  currentMovement = queue.poll();
-              }
+        executorService.scheduleAtFixedRate(() -> {
+            Movement currentMovement;
+            synchronized (lock) {
+                currentMovement = queue.poll();
+            }
 
-              if (currentMovement != null) {
-                  ext.sendToServer(new HPacket(
-                    "WiredSetObjectVariableValue",
-                    HMessage.Direction.TOSERVER,
-                    0,
-                    currentMovement.furniId,
-                    ALTITUDE_VARIABLE_ID,
-                    currentMovement.altitude
-                  ));
-              }
-          }, 5000, 350, TimeUnit.MILLISECONDS
-        );
+            if (currentMovement != null) {
+                ext.sendToServer(new HPacket("WiredSetObjectVariableValue", HMessage.Direction.TOSERVER, 0, currentMovement.furniId, ALTITUDE_VARIABLE_ID, currentMovement.altitude));
+            }
+        }, 5000, 350, TimeUnit.MILLISECONDS);
     }
 
-    public static synchronized Mover getInstance() {
-        if (instance == null) {
+    public static synchronized Mover I() {
+        if (INSTANCE == null) {
             throw new IllegalStateException("RoomPermissionState has not been initialized");
         }
 
-        return instance;
+        return INSTANCE;
     }
 
-    public static synchronized Mover getInstance(Robosort ext) {
-        if (instance == null) {
-            instance = new Mover(ext);
+    public static synchronized Mover I(Robosort ext) {
+        if (INSTANCE == null) {
+            INSTANCE = new Mover(ext);
         }
 
-        return instance;
+        return INSTANCE;
     }
 
     public void queue(int furniId, int altitude) {
