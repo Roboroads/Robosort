@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/Roboroads/Robosort/compare/v1.2.0...v1.2.1) (2025-12-05)
+
+
+### Changed and/or fixed
+
+* Added ancient wired to the exceptions. These will now sort as well. ([d8a7b70](https://github.com/Roboroads/Robosort/commit/d8a7b70d81980d42ec94c7ce9e415c02ac6f697a))
+
 ## [1.2.0](https://github.com/Roboroads/Robosort/compare/v1.1.1...v1.2.0) (2025-12-05)
 
 
