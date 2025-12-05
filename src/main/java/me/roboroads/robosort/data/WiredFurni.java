@@ -28,6 +28,9 @@ public class WiredFurni {
     private static final Map<String, ExceptionDetails> exceptions = new HashMap<String, ExceptionDetails>() {{
         put("wf_xtra_text_output_variable", new ExceptionDetails(WiredBoxType.EFFECT, ADDON_BOX_HEIGHT));
         put("wf_xtra_text_input_variable", new ExceptionDetails(WiredBoxType.EFFECT, ADDON_BOX_HEIGHT));
+        put("wf_ltdproto_act_toggle_state", new ExceptionDetails(WiredBoxType.EFFECT, SELECTOR_HEIGHT));
+        put("wf_proto_cnd_trggrer_on_frn", new ExceptionDetails(WiredBoxType.CONDITION, SELECTOR_HEIGHT));
+        put("wf_proto_trg_at_given_time", new ExceptionDetails(WiredBoxType.TRIGGER, SELECTOR_HEIGHT));
     }};
 
     public final HFloorItem floorItem;
