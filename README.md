@@ -15,6 +15,7 @@ When this is enabled, the plugin will keep track of you adding, moving of removi
 When commands are enabled, you can use these command in the Habbo chat bar:
 
 - `:sort` Activates sorting mode, after that just click on a box in the stack you want to sort.
+    - `:sort all` Sorts all stacks in the room.
 - `:down [amount=1]` Click on a box in the stack you want to move down `[amount]` spaces.
 - `:up [amount=1]` Click on a box in the stack you want to move down `[amount]` spaces.
 

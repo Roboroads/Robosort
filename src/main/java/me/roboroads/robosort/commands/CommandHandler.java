@@ -65,12 +65,10 @@ public class CommandHandler {
         }
 
         for (Command command : commands) {
-            if (text.startsWith(command.getTrigger())) {
-                boolean claimed = command.onChat(text);
-                if (claimed) {
-                    active = command;
-                }
-                return claimed;
+            Command.HandleResult res = command.handle(text);
+            if (res.claimed) {
+                active = res.interactive ? command : null;
+                return true;
             }
         }
 

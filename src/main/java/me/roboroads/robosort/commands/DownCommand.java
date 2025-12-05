@@ -5,6 +5,7 @@ import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.util.HabboUtil;
 
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class DownCommand extends Command {
@@ -15,24 +16,20 @@ public class DownCommand extends Command {
     }
 
     @Override
-    public String getTrigger() {
-        return ":down";
+    public String getTriggerPattern() {
+        return ":down(?:\\s+(\\d+))?";
     }
 
     @Override
-    public boolean onChat(String text) {
+    protected boolean onCommand(Matcher matcher) {
         try {
-            String[] parts = text.split(" ");
-            if (parts.length == 2) {
-                amount = Integer.parseInt(parts[1]);
-            } else {
-                amount = 1;
-            }
+            String num = matcher.group(1);
+            amount = num != null ? Integer.parseInt(num) : 1;
         } catch (Exception ignored) {
             amount = 1;
         }
         HabboUtil.I().sendChat("Click on a box that you want to move down " + amount + " position(s).");
-        return true;
+        return true; // interactive
     }
 
     @Override

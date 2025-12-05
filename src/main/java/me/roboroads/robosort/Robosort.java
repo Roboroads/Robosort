@@ -55,10 +55,10 @@ public class Robosort extends ExtensionForm {
     @Override
     protected void initExtension() {
         onConnect((host, i, s1, s2, hClient) -> furniDataTools = new FurniDataTools(host));
-        wiredState = WiredState.getInstance(this);
+        wiredState = WiredState.I(this);
         mover = Mover.I(this);
-        roomPermissionState = RoomPermissionState.getInstance(this);
-        floorPlanState = FloorPlanState.getInstance(this);
+        roomPermissionState = RoomPermissionState.I(this);
+        floorPlanState = FloorPlanState.I(this);
 
         // Initialize shared utility singleton
         HabboUtil.init(this);

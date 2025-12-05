@@ -9,9 +9,9 @@ import me.roboroads.robosort.Robosort;
  * <a href="https://github.com/sirjonasxx/G-Presets/blob/master/src/main/java/game/FloorState.java">Source</a>
  */
 public class FloorPlanState {
-    private static FloorPlanState instance;
+    private static FloorPlanState INSTANCE;
     private final Robosort ext;
-    private char[][] floorplan = null;
+    private char[][] floorPlan = null;
     private boolean isReady = false;
 
     private FloorPlanState(Robosort ext) {
@@ -25,14 +25,30 @@ public class FloorPlanState {
         ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> reset());
     }
 
+    public static FloorPlanState I() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("FloorPlanState has not been initialized");
+        }
+
+        return INSTANCE;
+    }
+
+    public static FloorPlanState I(Robosort ext) {
+        if (INSTANCE == null) {
+            INSTANCE = new FloorPlanState(ext);
+        }
+
+        return INSTANCE;
+    }
+
     private void handleFloorHeightMap(HMessage hMessage) {
         HPacket packet = hMessage.getPacket();
         packet.skip("bi");
         String[] split = packet.readString().split("\r");
-        floorplan = new char[split[0].length()][split.length];
+        floorPlan = new char[split[0].length()][split.length];
         for (int x = 0; x < split[0].length(); x++) {
             for (int y = 0; y < split.length; y++) {
-                floorplan[x][y] = split[y].charAt(x);
+                floorPlan[x][y] = split[y].charAt(x);
             }
         }
         isReady = true;
@@ -40,12 +56,12 @@ public class FloorPlanState {
 
     private void reset() {
         isReady = false;
-        floorplan = null;
+        floorPlan = null;
     }
 
     public int getTileHeight(int x, int y) {
         try {
-            char height = floorplan[x][y];
+            char height = floorPlan[x][y];
             if (height == 'x') {
                 return 0;
             }
@@ -60,21 +76,5 @@ public class FloorPlanState {
 
     public boolean isReady() {
         return isReady;
-    }
-
-    public static FloorPlanState getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("RoomPermissionState has not been initialized");
-        }
-
-        return instance;
-    }
-
-    public static FloorPlanState getInstance(Robosort ext) {
-        if (instance == null) {
-            instance = new FloorPlanState(ext);
-        }
-
-        return instance;
     }
 }

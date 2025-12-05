@@ -8,7 +8,7 @@ import me.roboroads.robosort.Robosort;
  * <a href="https://github.com/sirjonasxx/G-Presets/blob/master/src/main/java/game/RoomPermissions.java">Source</a>
  */
 public class RoomPermissionState {
-    private static RoomPermissionState instance;
+    private static RoomPermissionState INSTANCE;
     private final Robosort ext;
 
     private boolean canModifyWired;
@@ -26,6 +26,22 @@ public class RoomPermissionState {
         ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> clear());
     }
 
+    public static RoomPermissionState I() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("RoomPermissionState has not been initialized");
+        }
+
+        return INSTANCE;
+    }
+
+    public static RoomPermissionState I(Robosort ext) {
+        if (INSTANCE == null) {
+            INSTANCE = new RoomPermissionState(ext);
+        }
+
+        return INSTANCE;
+    }
+
     private void onWiredPermissions(HMessage msg) {
         canModifyWired = msg.getPacket().readBoolean();
     }
@@ -41,22 +57,6 @@ public class RoomPermissionState {
     public void clear() {
         canModifyWired = false;
         canMoveFurni = false;
-    }
-
-    public static RoomPermissionState getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("RoomPermissionState has not been initialized");
-        }
-
-        return instance;
-    }
-
-    public static RoomPermissionState getInstance(Robosort ext) {
-        if (instance == null) {
-            instance = new RoomPermissionState(ext);
-        }
-
-        return instance;
     }
 
     public boolean canModifyWired() {

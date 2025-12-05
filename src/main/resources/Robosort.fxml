@@ -38,12 +38,12 @@
                 <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
             </rowConstraints>
 
-            <Label text=":sort ">
+            <Label text=":sort [all] ">
                 <font>
                     <Font name="System Bold"/>
                 </font>
             </Label>
-            <Label text="Sort a wired stack." GridPane.columnIndex="1">
+            <Label text="Sort one or all wired stack(s)." GridPane.columnIndex="1">
                 <padding>
                     <Insets left="4.0"/>
                 </padding>

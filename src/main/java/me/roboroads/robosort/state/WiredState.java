@@ -5,6 +5,7 @@ import gearth.extensions.parsers.HPoint;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import me.roboroads.robosort.Robosort;
+import me.roboroads.robosort.data.Tile;
 import me.roboroads.robosort.data.WiredFurni;
 
 import java.util.*;
@@ -15,7 +16,7 @@ import java.util.stream.Collectors;
  * <a href="https://github.com/sirjonasxx/G-Presets/blob/master/src/main/java/game/FloorState.java">Source</a>
  */
 public class WiredState {
-    private static WiredState instance;
+    private static WiredState INSTANCE;
     private final Robosort ext;
     private Map<Integer, WiredFurni> currentWired;
     private Map<Integer, WiredFurni> previousWired;
@@ -37,6 +38,22 @@ public class WiredState {
         ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> reset());
         ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> reset());
         ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> reset());
+    }
+
+    public static WiredState I() {
+        if (INSTANCE == null) {
+            throw new IllegalStateException("WiredState has not been initialized");
+        }
+
+        return INSTANCE;
+    }
+
+    public static WiredState I(Robosort ext) {
+        if (INSTANCE == null) {
+            INSTANCE = new WiredState(ext);
+        }
+
+        return INSTANCE;
     }
 
     private void reset() {
@@ -150,28 +167,8 @@ public class WiredState {
         }
     }
 
-    public static WiredState getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("RoomPermissionState has not been initialized");
-        }
-
-        return instance;
-    }
-
-    public static WiredState getInstance(Robosort ext) {
-        if (instance == null) {
-            instance = new WiredState(ext);
-        }
-
-        return instance;
-    }
-
     public List<WiredFurni> wiredOnTile(int x, int y) {
-        return currentWired.values()
-          .stream()
-          .filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y)
-          .sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ()))
-          .collect(Collectors.toList());
+        return currentWired.values().stream().filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y).sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ())).collect(Collectors.toList());
     }
 
     public WiredFurni get(int id) {
@@ -192,5 +189,20 @@ public class WiredState {
 
     public boolean isReady() {
         return !currentWired.isEmpty();
+    }
+
+    // Returns unique (x,y) tile coordinates that contain at least one wired furni
+    public List<Tile> getAllWiredTiles() {
+        Set<String> seen = new HashSet<>();
+        List<Tile> tiles = new ArrayList<>();
+        for (WiredFurni wf : currentWired.values()) {
+            int x = wf.floorItem.getTile().getX();
+            int y = wf.floorItem.getTile().getY();
+            String key = x + "," + y;
+            if (seen.add(key)) {
+                tiles.add(new Tile(x, y));
+            }
+        }
+        return tiles;
     }
 }
