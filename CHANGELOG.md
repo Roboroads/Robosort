@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.2.0](https://github.com/Roboroads/Robosort/compare/v1.1.1...v1.2.0) (2025-12-05)
+
+
+### New
+
+* Added "Autostart" feature ([840c141](https://github.com/Roboroads/Robosort/commit/840c1415be15e7375e7c221f2d8e3089a7ad8b5b)), closes [#23](https://github.com/Roboroads/Robosort/issues/23)
+* Added command ":sort all" ([6bf9d9f](https://github.com/Roboroads/Robosort/commit/6bf9d9f098e78dd94d6ed6484d4928f0594d3e56)), closes [#21](https://github.com/Roboroads/Robosort/issues/21)
+* Added forced direction feature. ([08bc28c](https://github.com/Roboroads/Robosort/commit/08bc28c6175d9cde38dbe199dc6762b407d83ace)), closes [#22](https://github.com/Roboroads/Robosort/issues/22)
+* Added variables and variable addons to the sorting algorithm ([ca3ece0](https://github.com/Roboroads/Robosort/commit/ca3ece0100e387537fb20a0974b9db26ab94d70b)), closes [#20](https://github.com/Roboroads/Robosort/issues/20)
+
 ## [1.1.1](https://github.com/Roboroads/Robosort/compare/v1.1.0...v1.1.1) (2025-03-11)
 
 
