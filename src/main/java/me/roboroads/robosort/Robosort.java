@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 public class Robosort extends ExtensionForm {
     public CheckBox commandsEnabledCheckbox;
     public CheckBox sortOnActionEnabledCheckbox;
+    public CheckBox commandsAutostartCheckbox;
+    public CheckBox sortOnActionAutostartCheckbox;
     public ListView<WiredBoxType> sortOrderListView;
 
     private ObservableList<WiredBoxType> sortOrder;
@@ -64,11 +66,55 @@ public class Robosort extends ExtensionForm {
         HabboUtil.init(this);
 
         initializeCache();
+        initializeAutostartSettings();
         initializeSortOrderListView();
 
         // Initialize new handlers (they register their own interceptions)
         new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this)));
         new SortOnAction(this);
+    }
+
+    private void initializeAutostartSettings() {
+        // Read cached autostart values and apply
+        boolean commandsAuto = getCachedBool("autostart_commands", false);
+        boolean sortOnActionAuto = getCachedBool("autostart_sortOnAction", false);
+
+        if (commandsAutostartCheckbox != null) {
+            commandsAutostartCheckbox.setSelected(commandsAuto);
+            commandsAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("autostart_commands", newV));
+        }
+        if (sortOnActionAutostartCheckbox != null) {
+            sortOnActionAutostartCheckbox.setSelected(sortOnActionAuto);
+            sortOnActionAutostartCheckbox.selectedProperty().addListener((obs, oldV, newV) -> Cacher.put("autostart_sortOnAction", newV));
+        }
+
+        // If autostart is enabled, enable the corresponding features on startup
+        if (commandsAuto && commandsEnabledCheckbox != null) {
+            commandsEnabledCheckbox.setSelected(true);
+        }
+        if (sortOnActionAuto && sortOnActionEnabledCheckbox != null) {
+            sortOnActionEnabledCheckbox.setSelected(true);
+        }
+    }
+
+    private boolean getCachedBool(String key, boolean def) {
+        Object val;
+        try {
+            val = gearth.misc.Cacher.get(key);
+        } catch (Throwable t) {
+            // In case older Cacher versions don't have generic get, fall back to default
+            return def;
+        }
+        if (val == null) {
+            return def;
+        }
+        if (val instanceof Boolean) {
+            return (Boolean) val;
+        }
+        if (val instanceof Number) {
+            return ((Number) val).intValue() != 0;
+        }
+        return Boolean.parseBoolean(String.valueOf(val));
     }
 
     private void initializeSortOrderListView() {

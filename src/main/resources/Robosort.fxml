@@ -77,8 +77,12 @@
             <columnConstraints>
                 <ColumnConstraints halignment="LEFT" hgrow="NEVER"/>
                 <ColumnConstraints hgrow="ALWAYS"/>
+                <ColumnConstraints halignment="CENTER" hgrow="NEVER"/>
             </columnConstraints>
             <rowConstraints>
+                <!-- Header row -->
+                <RowConstraints valignment="CENTER" vgrow="NEVER"/>
+                <!-- Features rows -->
                 <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
                 <RowConstraints valignment="CENTER" vgrow="ALWAYS"/>
             </rowConstraints>
@@ -86,8 +90,20 @@
             <padding>
                 <Insets top="8.0"/>
             </padding>
-            <CheckBox fx:id="commandsEnabledCheckbox" mnemonicParsing="false"/>
-            <Label text="Enable commands ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="0">
+
+            <!-- Column headers -->
+            <Label text="Autostart" GridPane.columnIndex="2" GridPane.rowIndex="0">
+                <font>
+                    <Font name="System Bold"/>
+                </font>
+                <padding>
+                    <Insets left="6.0" right="6.0"/>
+                </padding>
+            </Label>
+
+            <!-- Commands row -->
+            <CheckBox fx:id="commandsEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+            <Label text="Enable commands ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="1">
                 <tooltip>
                     <Tooltip text="Enables the commands that are shown above"/>
                 </tooltip>
@@ -95,8 +111,15 @@
                     <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
-            <CheckBox fx:id="sortOnActionEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
-            <Label text="Enable sort on action ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <CheckBox fx:id="commandsAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <tooltip>
+                    <Tooltip text="Enable this automatically on startup"/>
+                </tooltip>
+            </CheckBox>
+
+            <!-- Sort on action row -->
+            <CheckBox fx:id="sortOnActionEnabledCheckbox" mnemonicParsing="false" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+            <Label text="Enable sort on action ⓘ" GridPane.columnIndex="1" GridPane.rowIndex="2">
                 <tooltip>
                     <Tooltip text="Automatically sort a stack when a box is added or removed"/>
                 </tooltip>
@@ -104,6 +127,11 @@
                     <Insets bottom="4.0" left="4.0" right="4.0" top="4.0"/>
                 </padding>
             </Label>
+            <CheckBox fx:id="sortOnActionAutostartCheckbox" mnemonicParsing="false" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                <tooltip>
+                    <Tooltip text="Enable this automatically on startup"/>
+                </tooltip>
+            </CheckBox>
         </GridPane>
         <Label text="Wired box sorting order:"/>
         <ListView fx:id="sortOrderListView">
