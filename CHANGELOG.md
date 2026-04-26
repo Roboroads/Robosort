@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/Roboroads/Robosort/compare/v1.2.1...v1.2.2) (2026-04-26)
+
+
+### Changed and/or fixed
+
+* Fixed indexOutOfBounds because of added curve data in WiredMovement packet by replacing packet handling it G-Packets ([769644f](https://github.com/Roboroads/Robosort/commit/769644f0969c6a4f57521f276a0b3af4c572fc41))
+
 ## [1.2.1](https://github.com/Roboroads/Robosort/compare/v1.2.0...v1.2.1) (2025-12-05)
 
 
