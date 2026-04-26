@@ -4,6 +4,9 @@ import gearth.extensions.parsers.HFloorItem;
 import gearth.extensions.parsers.HPoint;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.incoming.WiredMovements;
+import me.roboroads.gearth.gpackets.incoming.sub.wired.FurniMove;
+import me.roboroads.gearth.gpackets.incoming.sub.wired.WiredMovement;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.Tile;
 import me.roboroads.robosort.data.WiredFurni;
@@ -116,34 +119,16 @@ public class WiredState {
     }
 
     private void handleWiredMovements(HMessage hMessage) {
-        HPacket packet = hMessage.getPacket();
+        WiredMovements wiredMovements = WiredMovements.fromPacket(hMessage.getPacket());
 
-        int count = packet.readInteger();
-        for (int i = 0; i < count; i++) {
-            int type = packet.readInteger();
-            switch (type) {
-                case 0: // user
-                    packet.skip("iiiissiiiii");
-                    break;
-                case 1: // furni
-                    packet.skip("ii");
-                    int newX = packet.readInteger();
-                    int newY = packet.readInteger();
-
-                    packet.skip("s");
-                    String newZ = packet.readString();
-                    int furniId = packet.readInteger();
-                    packet.skip("ii");
-
-                    processMove(furniId, newX, newY, newZ);
-                    break;
-                case 2: // wall item
-                    packet.skip("iBiiiiiiiii");
-                    break;
-                case 3: // user direction
-                    packet.skip("iii");
-                    break;
+        for (WiredMovement movement : wiredMovements.movements()) {
+            if (!(movement instanceof FurniMove)) {
+                continue;
             }
+
+            FurniMove furniMove = (FurniMove) movement;
+
+            processMove(furniMove.furniId(), furniMove.targetX(), furniMove.targetY(), furniMove.targetZ());
         }
     }
 
