@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/Roboroads/Robosort/compare/v1.2.2...v1.3.0) (2026-07-06)
+
+
+### New
+
+* add left and right rotation commands with support for all stacks ([c24afa4](https://github.com/Roboroads/Robosort/commit/c24afa49a6622b8723792924175e9a2e86e92872))
+
+
+### Changed and/or fixed
+
+* fixed handling unknown commands by not handling them ([000aa1d](https://github.com/Roboroads/Robosort/commit/000aa1d6cb6245f66393129ec6d5dd8a3900f234))
+* make forced rotation part of the movement queue, fixing conflicts with move on action and forced direction ([90c0228](https://github.com/Roboroads/Robosort/commit/90c022848500a2dd0fa14028bdc355e34e8824f6))
+* pass rotation value dynamically to properly handle exceptions and target-facing alignment ([7fa428b](https://github.com/Roboroads/Robosort/commit/7fa428b50719246003d0cfc9569cee811875cf4e))
+
 ## [1.2.2](https://github.com/Roboroads/Robosort/compare/v1.2.1...v1.2.2) (2026-04-26)
 
 
