@@ -27,12 +27,17 @@ public abstract class Command {
         }
     }
 
+    // Returns a matcher if the text matches this command's trigger, otherwise null.
+    public final Matcher match(String text) {
+        Pattern pattern = Pattern.compile(getTriggerPattern(), Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text.trim());
+        return matcher.matches() ? matcher : null;
+    }
+
     // Centralized argument parsing + dispatch based on regex
     public final HandleResult handle(String text) {
-        String trimmed = text.trim();
-        Pattern pattern = Pattern.compile(getTriggerPattern(), Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(trimmed);
-        if (!matcher.matches()) {
+        Matcher matcher = match(text);
+        if (matcher == null) {
             return new HandleResult(false, false);
         }
         boolean interactive = onCommand(matcher);

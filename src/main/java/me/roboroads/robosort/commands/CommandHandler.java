@@ -60,16 +60,25 @@ public class CommandHandler {
             return false;
         }
 
-        if (!HabboUtil.I().checkCanMove(true)) {
+        Command matched = null;
+        for (Command command : commands) {
+            if (command.match(text) != null) {
+                matched = command;
+                break;
+            }
+        }
+        if (matched == null) {
             return false;
         }
 
-        for (Command command : commands) {
-            Command.HandleResult res = command.handle(text);
-            if (res.claimed) {
-                active = res.interactive ? command : null;
-                return true;
-            }
+        if (!HabboUtil.I().checkCanMove(true)) {
+            return true;
+        }
+
+        Command.HandleResult res = matched.handle(text);
+        if (res.claimed) {
+            active = res.interactive ? matched : null;
+            return true;
         }
 
         return false;
