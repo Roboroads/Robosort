@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Mover {
     private static final String ALTITUDE_VARIABLE_ID = "-123";
+    private static final String ROTATION_VARIABLE_ID = "-122";
     private static Mover INSTANCE;
     private final Robosort ext;
 
@@ -37,7 +38,7 @@ public class Mover {
             }
 
             if (currentMovement != null) {
-                ext.sendToServer(new HPacket("WiredSetObjectVariableValue", HMessage.Direction.TOSERVER, 0, currentMovement.furniId, ALTITUDE_VARIABLE_ID, currentMovement.altitude));
+                ext.sendToServer(new HPacket("WiredSetObjectVariableValue", HMessage.Direction.TOSERVER, 0, currentMovement.furniId, currentMovement.variableId, currentMovement.value));
             }
         }, 5000, 350, TimeUnit.MILLISECONDS);
     }
@@ -58,20 +59,24 @@ public class Mover {
         return INSTANCE;
     }
 
-    public void queue(int furniId, int altitude) {
-        queue(new Movement(furniId, altitude));
+    public void queueAltitude(int furniId, int altitude) {
+        queueMovement(new Movement(furniId, ALTITUDE_VARIABLE_ID, altitude));
     }
 
-    public void queue(Movement movement) {
+    public void queueRotation(int furniId) {
+        queueMovement(new Movement(furniId, ROTATION_VARIABLE_ID, 1));
+    }
+
+    public void queueMovement(Movement movement) {
         synchronized (lock) {
-            tryDequeue(movement.furniId);
+            tryDequeue(movement.furniId, movement.variableId);
             queue.offer(movement);
         }
     }
 
-    private void tryDequeue(int furniId) {
+    private void tryDequeue(int furniId, String variableId) {
         synchronized (lock) {
-            queue.removeIf(movement -> movement.furniId == furniId);
+            queue.removeIf(movement -> movement.furniId == furniId && movement.variableId.equals(variableId));
         }
     }
 

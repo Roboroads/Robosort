@@ -73,7 +73,7 @@ public final class HabboUtil {
         for (WiredFurni wiredFurni : stackState) {
             int currentZ = (int) (wiredFurni.floorItem.getTile().getZ() * 100);
             if (Math.abs(currentZ - currentAltitude) > 1) { // tolerate 1 unit precision
-                ext.mover.queue(wiredFurni.floorItem.getId(), currentAltitude);
+                ext.mover.queueAltitude(wiredFurni.floorItem.getId(), currentAltitude);
             }
             currentAltitude += wiredFurni.height;
         }

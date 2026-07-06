@@ -51,7 +51,7 @@ public class UpCommand extends Command {
         for (int i = 0; i < movingBoxes.size(); i++) {
             WiredFurni movingBox = movingBoxes.get(i);
             double newZ = movingBoxes.get((i == 0 ? (movingBoxes.size() - 1) : (i - 1))).floorItem.getTile().getZ();
-            ext.mover.queue(movingBox.floorItem.getId(), (int) (newZ * 100));
+            ext.mover.queueAltitude(movingBox.floorItem.getId(), (int) (newZ * 100));
         }
     }
 }

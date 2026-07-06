@@ -2,10 +2,12 @@ package me.roboroads.robosort.data;
 
 public class Movement {
     public final int furniId;
-    public final int altitude;
+    public final String variableId;
+    public final int value;
 
-    public Movement(int furniId, int altitude) {
+    public Movement(int furniId, String variableId, int value) {
         this.furniId = furniId;
-        this.altitude = altitude;
+        this.variableId = variableId;
+        this.value = value;
     }
 }

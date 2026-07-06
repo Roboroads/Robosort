@@ -2,7 +2,6 @@ package me.roboroads.robosort.features;
 
 import gearth.extensions.parsers.HFloorItem;
 import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.WiredFurni;
 
@@ -11,7 +10,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ForcedDirection {
-    private static final String ROTATION_VARIABLE_ID = "-122";
     private static final Set<String> EXCEPTIONS = new HashSet<>(Arrays.asList("wf_act_leave_team", "wf_act_join_team", "wf_act_move_to_dir", "wf_act_toggle_to_rnd", "wf_act_control_clock", "wf_cnd_actor_in_team", "wf_cnd_not_in_team"));
 
     private final Robosort ext;
@@ -33,7 +31,7 @@ public class ForcedDirection {
         }
 
         if ((ext.getForcedDirection() == Robosort.ForcedDirection.LEFT && EXCEPTIONS.contains(furniClassName)) || (ext.getForcedDirection() == Robosort.ForcedDirection.RIGHT && !EXCEPTIONS.contains(furniClassName))) {
-            ext.sendToServer(new HPacket("WiredSetObjectVariableValue", HMessage.Direction.TOSERVER, 0, floorItem.getId(), ROTATION_VARIABLE_ID, 1));
+            ext.mover.queueRotation(floorItem.getId());
         }
     }
 }

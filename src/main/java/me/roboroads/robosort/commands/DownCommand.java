@@ -51,7 +51,7 @@ public class DownCommand extends Command {
         for (int i = movingBoxes.size() - 1; i >= 0; i--) {
             WiredFurni movingBox = movingBoxes.get(i);
             double newZ = movingBoxes.get((i == movingBoxes.size() - 1 ? 0 : i + 1)).floorItem.getTile().getZ();
-            ext.mover.queue(movingBox.floorItem.getId(), (int) (newZ * 100));
+            ext.mover.queueAltitude(movingBox.floorItem.getId(), (int) (newZ * 100));
         }
     }
 }
