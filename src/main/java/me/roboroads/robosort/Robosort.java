@@ -13,10 +13,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
-import me.roboroads.robosort.commands.CommandHandler;
-import me.roboroads.robosort.commands.DownCommand;
-import me.roboroads.robosort.commands.SortCommand;
-import me.roboroads.robosort.commands.UpCommand;
+import me.roboroads.robosort.commands.*;
 import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.features.SortOnAction;
 import me.roboroads.robosort.furnidata.FurniDataTools;
@@ -36,9 +33,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @ExtensionInfo(
-  Title = "Robosort", Description = "Automatically sort your wired stacks.",
-  // %%VERSION%% will be replaced by the GitHub Actions workflow
-  Version = "%%VERSION%%", Author = "Roboroads"
+        Title = "Robosort", Description = "Automatically sort your wired stacks.",
+        // %%VERSION%% will be replaced by the GitHub Actions workflow
+        Version = "%%VERSION%%", Author = "Roboroads"
 )
 public class Robosort extends ExtensionForm {
     public CheckBox commandsEnabledCheckbox;
@@ -88,7 +85,7 @@ public class Robosort extends ExtensionForm {
         initializeAutostartSettings();
 
         // Initialize new handlers (they register their own interceptions)
-        new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this)));
+        new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this), new LeftCommand(this), new RightCommand(this)));
         new SortOnAction(this);
         new me.roboroads.robosort.features.ForcedDirection(this);
     }

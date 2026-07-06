@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class ForcedDirection {
-    private static final Set<String> EXCEPTIONS = new HashSet<>(Arrays.asList("wf_act_leave_team", "wf_act_join_team", "wf_act_move_to_dir", "wf_act_toggle_to_rnd", "wf_act_control_clock", "wf_cnd_actor_in_team", "wf_cnd_not_in_team"));
+    public static final Set<String> EXCEPTIONS = new HashSet<>(Arrays.asList("wf_act_leave_team", "wf_act_join_team", "wf_act_move_to_dir", "wf_act_toggle_to_rnd", "wf_act_control_clock", "wf_cnd_actor_in_team", "wf_cnd_not_in_team"));
 
     private final Robosort ext;
 
