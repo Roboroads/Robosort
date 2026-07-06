@@ -15,10 +15,11 @@ public final class RotateStack {
         int rotated = 0;
         for (WiredFurni wf : stack) {
             boolean isException = ForcedDirection.EXCEPTIONS.contains(wf.furniClassName);
-            boolean facesLeft = (wf.floorItem.getFacing().ordinal() == 0) != isException;
-            if (facesLeft != targetLeft) {
+            int targetValue = (targetLeft ^ isException) ? 0 : 1;
+            int currentValue = wf.floorItem.getFacing().ordinal();
+            if (currentValue != targetValue) {
                 int preserveAltitude = (int) (wf.floorItem.getTile().getZ() * 100);
-                ext.mover.queueRotation(wf.floorItem.getId());
+                ext.mover.queueRotation(wf.floorItem.getId(), targetValue);
                 ext.mover.queueAltitude(wf.floorItem.getId(), preserveAltitude);
                 rotated++;
             }

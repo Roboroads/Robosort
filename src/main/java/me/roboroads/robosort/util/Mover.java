@@ -63,8 +63,8 @@ public class Mover {
         queueMovement(new Movement(furniId, ALTITUDE_VARIABLE_ID, altitude));
     }
 
-    public void queueRotation(int furniId) {
-        queueMovement(new Movement(furniId, ROTATION_VARIABLE_ID, 1));
+    public void queueRotation(int furniId, int value) {
+        queueMovement(new Movement(furniId, ROTATION_VARIABLE_ID, value));
     }
 
     public void queueMovement(Movement movement) {

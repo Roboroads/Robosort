@@ -31,7 +31,7 @@ public class ForcedDirection {
         }
 
         if ((ext.getForcedDirection() == Robosort.ForcedDirection.LEFT && EXCEPTIONS.contains(furniClassName)) || (ext.getForcedDirection() == Robosort.ForcedDirection.RIGHT && !EXCEPTIONS.contains(furniClassName))) {
-            ext.mover.queueRotation(floorItem.getId());
+            ext.mover.queueRotation(floorItem.getId(), 1);
         }
     }
 }
