@@ -18,9 +18,8 @@ public final class RotateStack {
             int targetValue = (targetLeft ^ isException) ? 0 : 1;
             int currentValue = wf.getRotation();
             if (currentValue != targetValue) {
-                int preserveAltitude = (int) (wf.getZ() * 100);
+                // Mover puts the box back at its altitude after the rotation
                 ext.mover.queueRotation(wf.id, targetValue);
-                ext.mover.queueAltitude(wf.id, preserveAltitude);
                 rotated++;
             }
         }
