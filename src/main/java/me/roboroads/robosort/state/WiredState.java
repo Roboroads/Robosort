@@ -1,12 +1,20 @@
 package me.roboroads.robosort.state;
 
-import gearth.extensions.parsers.HFloorItem;
-import gearth.extensions.parsers.HPoint;
 import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.CloseConnection;
+import me.roboroads.gearth.gpackets.incoming.ObjectAdd;
+import me.roboroads.gearth.gpackets.incoming.ObjectRemove;
+import me.roboroads.gearth.gpackets.incoming.ObjectUpdate;
+import me.roboroads.gearth.gpackets.incoming.Objects;
+import me.roboroads.gearth.gpackets.incoming.RoomReady;
+import me.roboroads.gearth.gpackets.incoming.SlideObjectBundle;
 import me.roboroads.gearth.gpackets.incoming.WiredMovements;
+import me.roboroads.gearth.gpackets.incoming.sub.furni.FloorItem;
+import me.roboroads.gearth.gpackets.incoming.sub.furni.SlideObject;
 import me.roboroads.gearth.gpackets.incoming.sub.wired.FurniMove;
 import me.roboroads.gearth.gpackets.incoming.sub.wired.WiredMovement;
+import me.roboroads.gearth.gpackets.outgoing.Quit;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.Tile;
 import me.roboroads.robosort.data.WiredFurni;
@@ -27,20 +35,6 @@ public class WiredState {
     private WiredState(Robosort ext) {
         reset();
         this.ext = ext;
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "Objects", this::handleObjects);
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectAdd", this::handleObjectAdd);
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectRemove", this::handleObjectRemove);
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectUpdate", this::handleObjectUpdate);
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "SlideObjectBundle", this::handleSlideObjectBundle);
-        ext.intercept(HMessage.Direction.TOCLIENT, "WiredFurniMove", this::handleWiredFurniMove);
-        ext.intercept(HMessage.Direction.TOCLIENT, "WiredMovements", this::handleWiredMovements);
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> reset());
-        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> reset());
-        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> reset());
     }
 
     public static WiredState I() {
@@ -64,63 +58,44 @@ public class WiredState {
         previousWired = new HashMap<>();
     }
 
-    private void handleObjects(HMessage hMessage) {
-        HFloorItem[] floorItems = HFloorItem.parse(hMessage.getPacket());
-
-        Arrays.stream(floorItems).forEach(this::maybeAdd);
+    @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
+    private void onLeaveRoom(HMessage hMessage) {
+        reset();
     }
 
-    private void handleObjectAdd(HMessage hMessage) {
-        maybeAdd(new HFloorItem(hMessage.getPacket()));
+    @Intercept
+    private void handleObjects(Objects objects) {
+        objects.objects().forEach(this::maybeAdd);
     }
 
-    private void handleObjectRemove(HMessage hMessage) {
-        HPacket packet = hMessage.getPacket();
-        int furniId = Integer.parseInt(packet.readString());
+    @Intercept
+    private void handleObjectAdd(ObjectAdd objectAdd) {
+        maybeAdd(objectAdd.object());
+    }
+
+    @Intercept
+    private void handleObjectRemove(ObjectRemove objectRemove) {
+        int furniId = Integer.parseInt(objectRemove.furniId());
         WiredFurni removedWired = currentWired.remove(furniId);
         if (removedWired != null) {
             this.previousWired.put(furniId, removedWired);
         }
     }
 
-    private void handleObjectUpdate(HMessage hMessage) {
-        maybeAdd(new HFloorItem(hMessage.getPacket()));
+    @Intercept
+    private void handleObjectUpdate(ObjectUpdate objectUpdate) {
+        maybeAdd(objectUpdate.object());
     }
 
-    private void handleSlideObjectBundle(HMessage hMessage) {
-        HPacket packet = hMessage.getPacket();
-        packet.readInteger(); // oldX
-        packet.readInteger(); // oldY
-        int newX = packet.readInteger();
-        int newY = packet.readInteger();
-
-        int count = packet.readInteger();
-        for (int i = 0; i < count; i++) {
-            int furniId = packet.readInteger();
-            packet.readString(); // oldZ
-            String newZ = packet.readString();
-
-            processMove(furniId, newX, newY, newZ);
+    @Intercept
+    private void handleSlideObjectBundle(SlideObjectBundle slideObjectBundle) {
+        for (SlideObject slideObject : slideObjectBundle.objects()) {
+            processMove(slideObject.furniId(), slideObjectBundle.newX(), slideObjectBundle.newY(), slideObject.newZ());
         }
     }
 
-    private void handleWiredFurniMove(HMessage hMessage) {
-        HPacket packet = hMessage.getPacket();
-        packet.readInteger(); // oldX
-        packet.readInteger(); // oldY
-        int newX = packet.readInteger();
-        int newY = packet.readInteger();
-        packet.readString(); // oldZ
-        String newZ = packet.readString();
-
-        int furniId = packet.readInteger();
-
-        processMove(furniId, newX, newY, newZ);
-    }
-
-    private void handleWiredMovements(HMessage hMessage) {
-        WiredMovements wiredMovements = WiredMovements.fromPacket(hMessage.getPacket());
-
+    @Intercept
+    private void handleWiredMovements(WiredMovements wiredMovements) {
         for (WiredMovement movement : wiredMovements.movements()) {
             if (!(movement instanceof FurniMove)) {
                 continue;
@@ -132,28 +107,28 @@ public class WiredState {
         }
     }
 
-    private void maybeAdd(HFloorItem floorItem) {
-        String furniName = ext.furniDataTools.getFloorItemClassName(floorItem.getTypeId());
+    private void maybeAdd(FloorItem floorItem) {
+        String furniName = ext.furniDataTools.getFloorItemClassName(floorItem.furniClassId());
 
         if (WiredFurni.isWiredFurni(furniName)) {
-            WiredFurni currentWiredFurni = currentWired.get(floorItem.getId());
+            WiredFurni currentWiredFurni = currentWired.get(floorItem.furniId());
             if (currentWiredFurni != null) {
-                previousWired.put(floorItem.getId(), currentWiredFurni);
+                previousWired.put(floorItem.furniId(), currentWiredFurni);
             }
 
-            currentWired.put(floorItem.getId(), new WiredFurni(floorItem, furniName));
+            currentWired.put(floorItem.furniId(), new WiredFurni(floorItem, furniName));
         }
     }
 
     private void processMove(int furniId, int newX, int newY, String newZ) {
         WiredFurni wiredFurni = currentWired.get(furniId);
         if (wiredFurni != null) {
-            wiredFurni.floorItem.setTile(new HPoint(newX, newY, Double.parseDouble(newZ)));
+            wiredFurni.moveTo(newX, newY, Double.parseDouble(newZ));
         }
     }
 
     public List<WiredFurni> wiredOnTile(int x, int y) {
-        return currentWired.values().stream().filter(wiredFurni -> wiredFurni.floorItem.getTile().getX() == x && wiredFurni.floorItem.getTile().getY() == y).sorted(Comparator.comparingDouble(wiredFurni -> wiredFurni.floorItem.getTile().getZ())).collect(Collectors.toList());
+        return currentWired.values().stream().filter(wiredFurni -> wiredFurni.getX() == x && wiredFurni.getY() == y).sorted(Comparator.comparingDouble(WiredFurni::getZ)).collect(Collectors.toList());
     }
 
     public WiredFurni get(int id) {
@@ -181,8 +156,8 @@ public class WiredState {
         Set<String> seen = new HashSet<>();
         List<Tile> tiles = new ArrayList<>();
         for (WiredFurni wf : currentWired.values()) {
-            int x = wf.floorItem.getTile().getX();
-            int y = wf.floorItem.getTile().getY();
+            int x = wf.getX();
+            int y = wf.getY();
             String key = x + "," + y;
             if (seen.add(key)) {
                 tiles.add(new Tile(x, y));

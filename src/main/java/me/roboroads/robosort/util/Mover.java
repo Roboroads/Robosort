@@ -1,7 +1,13 @@
 package me.roboroads.robosort.util;
 
 import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.CloseConnection;
+import me.roboroads.gearth.gpackets.incoming.RoomReady;
+import me.roboroads.gearth.gpackets.model.enums.WiredVariableAction;
+import me.roboroads.gearth.gpackets.model.enums.WiredVariableTarget;
+import me.roboroads.gearth.gpackets.outgoing.Quit;
+import me.roboroads.gearth.gpackets.outgoing.WiredSetObjectVariableValue;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.Movement;
 
@@ -22,11 +28,12 @@ public class Mover {
     private Mover(Robosort ext) {
         this.ext = ext;
 
-        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> queue.clear());
-        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> queue.clear());
-        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> queue.clear());
-
         processQueue();
+    }
+
+    @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
+    private void onLeaveRoom(HMessage hMessage) {
+        queue.clear();
     }
 
     private void processQueue() {
@@ -38,7 +45,7 @@ public class Mover {
             }
 
             if (currentMovement != null) {
-                ext.sendToServer(new HPacket("WiredSetObjectVariableValue", HMessage.Direction.TOSERVER, 0, currentMovement.furniId, currentMovement.variableId, currentMovement.value));
+                ext.sendToServer(new WiredSetObjectVariableValue(WiredVariableTarget.FURNI, currentMovement.furniId, currentMovement.variableId, currentMovement.value, WiredVariableAction.SET_VALUE).toPacket());
             }
         }, 5000, 350, TimeUnit.MILLISECONDS);
     }

@@ -13,6 +13,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.TransferMode;
+import me.roboroads.gearth.gpackets.GPackets;
 import me.roboroads.robosort.commands.*;
 import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.features.SortOnAction;
@@ -84,10 +85,11 @@ public class Robosort extends ExtensionForm {
         initializeSortOrderListView();
         initializeAutostartSettings();
 
-        // Initialize new handlers (they register their own interceptions)
-        new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this), new LeftCommand(this), new RightCommand(this)));
-        new SortOnAction(this);
-        new me.roboroads.robosort.features.ForcedDirection(this);
+        // Initialize handlers and register every @Intercept method on them
+        CommandHandler commandHandler = new CommandHandler(this, Arrays.asList(new SortCommand(this), new UpCommand(this), new DownCommand(this), new LeftCommand(this), new RightCommand(this)));
+        SortOnAction sortOnAction = new SortOnAction(this);
+        me.roboroads.robosort.features.ForcedDirection forcedDirection = new me.roboroads.robosort.features.ForcedDirection(this);
+        GPackets.init(this, wiredState, mover, roomPermissionState, floorPlanState, commandHandler, sortOnAction, forcedDirection);
     }
 
     private void initializeForcedDirectionSettings() {

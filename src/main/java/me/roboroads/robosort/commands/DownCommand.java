@@ -38,7 +38,7 @@ public class DownCommand extends Command {
     }
 
     private void moveDown(WiredFurni wiredFurni, int amount) {
-        List<WiredFurni> stackState = ext.wiredState.wiredOnTile(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY()).stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType).collect(Collectors.toList());
+        List<WiredFurni> stackState = ext.wiredState.wiredOnTile(wiredFurni.getX(), wiredFurni.getY()).stream().filter(i -> i.wiredBoxType == wiredFurni.wiredBoxType).collect(Collectors.toList());
 
         int index = stackState.indexOf(wiredFurni);
         List<WiredFurni> movingBoxes = stackState.subList(Math.max(0, index - amount), index + 1);
@@ -50,8 +50,8 @@ public class DownCommand extends Command {
 
         for (int i = movingBoxes.size() - 1; i >= 0; i--) {
             WiredFurni movingBox = movingBoxes.get(i);
-            double newZ = movingBoxes.get((i == movingBoxes.size() - 1 ? 0 : i + 1)).floorItem.getTile().getZ();
-            ext.mover.queueAltitude(movingBox.floorItem.getId(), (int) (newZ * 100));
+            double newZ = movingBoxes.get((i == movingBoxes.size() - 1 ? 0 : i + 1)).getZ();
+            ext.mover.queueAltitude(movingBox.id, (int) (newZ * 100));
         }
     }
 }

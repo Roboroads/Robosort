@@ -1,6 +1,6 @@
 package me.roboroads.robosort.data;
 
-import gearth.extensions.parsers.HFloorItem;
+import me.roboroads.gearth.gpackets.incoming.sub.furni.FloorItem;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -33,20 +33,52 @@ public class WiredFurni {
         put("wf_proto_trg_at_given_time", new ExceptionDetails(WiredBoxType.TRIGGER, SELECTOR_HEIGHT));
     }};
 
-    public final HFloorItem floorItem;
+    public final int id;
     public final WiredBoxType wiredBoxType;
     public final String furniClassName;
     public final int height;
 
-    public WiredFurni(HFloorItem floorItem, String furniClassName) {
+    private int x;
+    private int y;
+    private double z;
+    private int rotation;
+
+    public WiredFurni(FloorItem floorItem, String furniClassName) {
         if (!isWiredFurni(furniClassName)) {
             throw new IllegalArgumentException("Not a wired furni: " + furniClassName);
         }
 
-        this.floorItem = floorItem;
+        this.id = floorItem.furniId();
         this.furniClassName = furniClassName;
         this.wiredBoxType = getType(furniClassName);
         this.height = getHeight();
+
+        this.x = floorItem.x();
+        this.y = floorItem.y();
+        this.z = Double.parseDouble(floorItem.z());
+        this.rotation = floorItem.direction().value();
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public double getZ() {
+        return z;
+    }
+
+    public int getRotation() {
+        return rotation;
+    }
+
+    public void moveTo(int x, int y, double z) {
+        this.x = x;
+        this.y = y;
+        this.z = z;
     }
 
     private int getHeight() {
