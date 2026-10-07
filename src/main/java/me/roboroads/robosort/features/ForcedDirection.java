@@ -31,6 +31,10 @@ public class ForcedDirection {
             return;
         }
 
+        if (floorItem.direction().value() == 1) {
+            return;
+        }
+
         if ((ext.getForcedDirection() == Robosort.ForcedDirection.LEFT && EXCEPTIONS.contains(furniClassName)) || (ext.getForcedDirection() == Robosort.ForcedDirection.RIGHT && !EXCEPTIONS.contains(furniClassName))) {
             ext.mover.queueRotation(floorItem.furniId(), 1);
         }

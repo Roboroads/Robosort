@@ -20,6 +20,7 @@ import me.roboroads.robosort.data.Tile;
 import me.roboroads.robosort.data.WiredFurni;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -54,8 +55,9 @@ public class WiredState {
     }
 
     private void reset() {
-        currentWired = new HashMap<>();
-        previousWired = new HashMap<>();
+        // Concurrent: Mover reads these from its own thread
+        currentWired = new ConcurrentHashMap<>();
+        previousWired = new ConcurrentHashMap<>();
     }
 
     @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
