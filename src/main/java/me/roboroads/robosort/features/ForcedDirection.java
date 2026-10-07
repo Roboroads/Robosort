@@ -1,7 +1,8 @@
 package me.roboroads.robosort.features;
 
-import gearth.extensions.parsers.HFloorItem;
-import gearth.protocol.HMessage;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.ObjectAdd;
+import me.roboroads.gearth.gpackets.incoming.sub.furni.FloorItem;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.WiredFurni;
 
@@ -16,22 +17,22 @@ public class ForcedDirection {
 
     public ForcedDirection(Robosort ext) {
         this.ext = ext;
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectAdd", this::onObjectAdd);
     }
 
-    private void onObjectAdd(HMessage hMessage) {
+    @Intercept
+    private void onObjectAdd(ObjectAdd objectAdd) {
         if (!ext.forcedDirectionEnabled()) {
             return;
         }
 
-        HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
-        String furniClassName = ext.furniDataTools.getFloorItemClassName(floorItem.getTypeId());
+        FloorItem floorItem = objectAdd.object();
+        String furniClassName = ext.furniDataTools.getFloorItemClassName(floorItem.furniClassId());
         if (!WiredFurni.isWiredFurni(furniClassName)) {
             return;
         }
 
         if ((ext.getForcedDirection() == Robosort.ForcedDirection.LEFT && EXCEPTIONS.contains(furniClassName)) || (ext.getForcedDirection() == Robosort.ForcedDirection.RIGHT && !EXCEPTIONS.contains(furniClassName))) {
-            ext.mover.queueRotation(floorItem.getId(), 1);
+            ext.mover.queueRotation(floorItem.furniId(), 1);
         }
     }
 }

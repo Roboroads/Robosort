@@ -1,6 +1,12 @@
 package me.roboroads.robosort.commands;
 
 import gearth.protocol.HMessage;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.CloseConnection;
+import me.roboroads.gearth.gpackets.incoming.RoomReady;
+import me.roboroads.gearth.gpackets.outgoing.Chat;
+import me.roboroads.gearth.gpackets.outgoing.ClickFurni;
+import me.roboroads.gearth.gpackets.outgoing.Quit;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.util.HabboUtil;
@@ -15,33 +21,35 @@ public class CommandHandler {
     public CommandHandler(Robosort ctx, List<Command> commands) {
         this.ext = ctx;
         this.commands = commands;
-        // Register interceptions here to keep Robosort minimal
-        ext.intercept(HMessage.Direction.TOSERVER, "Chat", hMessage -> {
-            String text = hMessage.getPacket().readString();
-            if (!ext.commandsEnabled() || !text.startsWith(":")) {
-                return;
-            }
-            boolean handled = handleChat(text);
-            if (handled) {
-                hMessage.setBlocked(true);
-            }
-        });
+    }
 
-        ext.intercept(HMessage.Direction.TOSERVER, "ClickFurni", hMessage -> {
-            if (!ext.commandsEnabled() || !HabboUtil.I().checkCanMove(false)) {
-                return;
-            }
-            int furniId = hMessage.getPacket().readInteger();
-            boolean handled = handleClickFurni(furniId);
-            if (handled) {
-                hMessage.setBlocked(true);
-            }
-        });
+    @Intercept
+    private void onChat(Chat chat, HMessage hMessage) {
+        String text = chat.text();
+        if (!ext.commandsEnabled() || !text.startsWith(":")) {
+            return;
+        }
+        boolean handled = handleChat(text);
+        if (handled) {
+            hMessage.setBlocked(true);
+        }
+    }
 
-        // Abort active command on common lifecycle events
-        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> abortActive());
-        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> abortActive());
-        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> abortActive());
+    @Intercept
+    private void onClickFurni(ClickFurni clickFurni, HMessage hMessage) {
+        if (!ext.commandsEnabled() || !HabboUtil.I().checkCanMove(false)) {
+            return;
+        }
+        boolean handled = handleClickFurni(clickFurni.furniId());
+        if (handled) {
+            hMessage.setBlocked(true);
+        }
+    }
+
+    // Abort active command on common lifecycle events
+    @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
+    private void onLeaveRoom(HMessage hMessage) {
+        abortActive();
     }
 
     public boolean handleChat(String text) {

@@ -1,8 +1,15 @@
 package me.roboroads.robosort.features;
 
-import gearth.extensions.parsers.HFloorItem;
 import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.ObjectAdd;
+import me.roboroads.gearth.gpackets.incoming.ObjectRemove;
+import me.roboroads.gearth.gpackets.incoming.ObjectUpdate;
+import me.roboroads.gearth.gpackets.incoming.sub.furni.FloorItem;
+import me.roboroads.gearth.gpackets.outgoing.BuildersClubPlaceRoomItem;
+import me.roboroads.gearth.gpackets.outgoing.MoveObject;
+import me.roboroads.gearth.gpackets.outgoing.PickupObject;
+import me.roboroads.gearth.gpackets.outgoing.PlaceObject;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.WiredFurni;
 import me.roboroads.robosort.util.HabboUtil;
@@ -25,73 +32,67 @@ public class SortOnAction {
         this.furniRemoved = init;
         this.furniAdded = init;
         this.furniMoved = init;
-
-        // Register interceptions here to keep Robosort minimal
-        ext.intercept(HMessage.Direction.TOSERVER, "PlaceObject", m -> onPlaceObject());
-        ext.intercept(HMessage.Direction.TOSERVER, "BuildersClubPlaceRoomItem", m -> onPlaceObject());
-        ext.intercept(HMessage.Direction.TOSERVER, "MoveObject", m -> onMoveObject());
-        ext.intercept(HMessage.Direction.TOSERVER, "PickupObject", m -> onPickupObject());
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectAdd", this::onObjectAdd);
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectRemove", this::onObjectRemove);
-        ext.intercept(HMessage.Direction.TOCLIENT, "ObjectUpdate", this::onObjectUpdate);
     }
 
-    public void onPlaceObject() {
+    @Intercept({PlaceObject.class, BuildersClubPlaceRoomItem.class})
+    public void onPlaceObject(HMessage hMessage) {
         furniAdded = LocalDateTime.now();
     }
 
-    public void onMoveObject() {
+    @Intercept(MoveObject.class)
+    public void onMoveObject(HMessage hMessage) {
         furniMoved = LocalDateTime.now();
     }
 
-    public void onPickupObject() {
+    @Intercept(PickupObject.class)
+    public void onPickupObject(HMessage hMessage) {
         furniRemoved = LocalDateTime.now();
     }
 
-    public void onObjectAdd(HMessage hMessage) {
-        handleAddOrUpdate(hMessage, furniAdded);
+    @Intercept
+    public void onObjectAdd(ObjectAdd objectAdd) {
+        handleAddOrUpdate(objectAdd.object(), furniAdded);
     }
 
-    public void onObjectUpdate(HMessage hMessage) {
-        handleAddOrUpdate(hMessage, furniMoved);
+    @Intercept
+    public void onObjectUpdate(ObjectUpdate objectUpdate) {
+        handleAddOrUpdate(objectUpdate.object(), furniMoved);
     }
 
-    public void onObjectRemove(HMessage hMessage) {
+    @Intercept
+    public void onObjectRemove(ObjectRemove objectRemove) {
         long msDiff = Duration.between(furniRemoved, LocalDateTime.now()).toMillis();
         if (ext.sortOnActionEnabled() && HabboUtil.I().checkCanMove(false) && msDiff < 500) {
-            HPacket packet = hMessage.getPacket();
-            int furniId = Integer.parseInt(packet.readString());
+            int furniId = Integer.parseInt(objectRemove.furniId());
             WiredFurni wiredFurni = ext.wiredState.get(furniId);
             if (wiredFurni != null) {
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        HabboUtil.I().sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
+                        HabboUtil.I().sort(wiredFurni.getX(), wiredFurni.getY());
                     }
                 }, 10);
             }
         }
     }
 
-    public void onObjectAddOrUpdateWithRef(HMessage hMessage, LocalDateTime lastAction) {
-        handleAddOrUpdate(hMessage, lastAction);
-    }
-
-    private void handleAddOrUpdate(HMessage hMessage, LocalDateTime lastAction) {
+    private void handleAddOrUpdate(FloorItem floorItem, LocalDateTime lastAction) {
         long msDiff = Duration.between(lastAction, LocalDateTime.now()).toMillis();
         if (ext.sortOnActionEnabled() && HabboUtil.I().checkCanMove(false) && msDiff < 500) {
-            HFloorItem floorItem = new HFloorItem(hMessage.getPacket());
-            String furniClassName = ext.furniDataTools.getFloorItemClassName(floorItem.getTypeId());
+            String furniClassName = ext.furniDataTools.getFloorItemClassName(floorItem.furniClassId());
 
             if (WiredFurni.isWiredFurni(furniClassName)) {
+                int furniId = floorItem.furniId();
+                int x = floorItem.x();
+                int y = floorItem.y();
                 new Timer().schedule(new TimerTask() {
                     @Override
                     public void run() {
-                        HabboUtil.I().sort(floorItem.getTile().getX(), floorItem.getTile().getY());
+                        HabboUtil.I().sort(x, y);
 
-                        WiredFurni previousPosition = ext.wiredState.getPrevious(floorItem.getId());
-                        if (previousPosition != null && (floorItem.getTile().getX() != previousPosition.floorItem.getTile().getX() || floorItem.getTile().getY() != previousPosition.floorItem.getTile().getY())) {
-                            HabboUtil.I().sort(previousPosition.floorItem.getTile().getX(), previousPosition.floorItem.getTile().getY());
+                        WiredFurni previousPosition = ext.wiredState.getPrevious(furniId);
+                        if (previousPosition != null && (x != previousPosition.getX() || y != previousPosition.getY())) {
+                            HabboUtil.I().sort(previousPosition.getX(), previousPosition.getY());
                         }
                     }
                 }, 10);

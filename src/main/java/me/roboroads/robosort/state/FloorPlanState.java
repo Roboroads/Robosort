@@ -1,7 +1,11 @@
 package me.roboroads.robosort.state;
 
 import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.CloseConnection;
+import me.roboroads.gearth.gpackets.incoming.FloorHeightMap;
+import me.roboroads.gearth.gpackets.incoming.RoomReady;
+import me.roboroads.gearth.gpackets.outgoing.Quit;
 import me.roboroads.robosort.Robosort;
 
 /**
@@ -17,12 +21,6 @@ public class FloorPlanState {
     private FloorPlanState(Robosort ext) {
         reset();
         this.ext = ext;
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "FloorHeightMap", this::handleFloorHeightMap);
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> reset());
-        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> reset());
-        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> reset());
     }
 
     public static FloorPlanState I() {
@@ -41,10 +39,9 @@ public class FloorPlanState {
         return INSTANCE;
     }
 
-    private void handleFloorHeightMap(HMessage hMessage) {
-        HPacket packet = hMessage.getPacket();
-        packet.skip("bi");
-        String[] split = packet.readString().split("\r");
+    @Intercept
+    private void handleFloorHeightMap(FloorHeightMap floorHeightMap) {
+        String[] split = floorHeightMap.floorPlan().split("\r");
         floorPlan = new char[split[0].length()][split.length];
         for (int x = 0; x < split[0].length(); x++) {
             for (int y = 0; y < split.length; y++) {
@@ -52,6 +49,11 @@ public class FloorPlanState {
             }
         }
         isReady = true;
+    }
+
+    @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
+    private void onLeaveRoom(HMessage hMessage) {
+        reset();
     }
 
     private void reset() {

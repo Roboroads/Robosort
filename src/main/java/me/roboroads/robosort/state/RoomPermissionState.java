@@ -1,6 +1,13 @@
 package me.roboroads.robosort.state;
 
 import gearth.protocol.HMessage;
+import me.roboroads.gearth.gpackets.Intercept;
+import me.roboroads.gearth.gpackets.incoming.CloseConnection;
+import me.roboroads.gearth.gpackets.incoming.RoomReady;
+import me.roboroads.gearth.gpackets.incoming.WiredPermissions;
+import me.roboroads.gearth.gpackets.incoming.YouAreController;
+import me.roboroads.gearth.gpackets.incoming.YouAreNotController;
+import me.roboroads.gearth.gpackets.outgoing.Quit;
 import me.roboroads.robosort.Robosort;
 
 /**
@@ -16,14 +23,6 @@ public class RoomPermissionState {
 
     private RoomPermissionState(Robosort ext) {
         this.ext = ext;
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "WiredPermissions", this::onWiredPermissions);
-        ext.intercept(HMessage.Direction.TOCLIENT, "YouAreController", this::onYouAreController);
-        ext.intercept(HMessage.Direction.TOCLIENT, "YouAreNotController", this::onYouAreNotController);
-
-        ext.intercept(HMessage.Direction.TOCLIENT, "CloseConnection", m -> clear());
-        ext.intercept(HMessage.Direction.TOSERVER, "Quit", m -> clear());
-        ext.intercept(HMessage.Direction.TOCLIENT, "RoomReady", m -> clear());
     }
 
     public static RoomPermissionState I() {
@@ -42,16 +41,24 @@ public class RoomPermissionState {
         return INSTANCE;
     }
 
-    private void onWiredPermissions(HMessage msg) {
-        canModifyWired = msg.getPacket().readBoolean();
+    @Intercept
+    private void onWiredPermissions(WiredPermissions wiredPermissions) {
+        canModifyWired = wiredPermissions.canModify();
     }
 
+    @Intercept(YouAreController.class)
     private void onYouAreController(HMessage msg) {
         canMoveFurni = true;
     }
 
+    @Intercept(YouAreNotController.class)
     private void onYouAreNotController(HMessage msg) {
         canMoveFurni = false;
+    }
+
+    @Intercept({CloseConnection.class, RoomReady.class, Quit.class})
+    private void onLeaveRoom(HMessage msg) {
+        clear();
     }
 
     public void clear() {

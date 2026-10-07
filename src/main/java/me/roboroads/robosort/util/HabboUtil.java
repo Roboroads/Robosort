@@ -1,11 +1,13 @@
 package me.roboroads.robosort.util;
 
-import gearth.protocol.HMessage;
-import gearth.protocol.HPacket;
+import me.roboroads.gearth.gpackets.incoming.Chat;
+import me.roboroads.gearth.gpackets.model.enums.ChatBarStyle;
+import me.roboroads.gearth.gpackets.model.enums.Gesture;
 import me.roboroads.robosort.Robosort;
 import me.roboroads.robosort.data.WiredBoxType;
 import me.roboroads.robosort.data.WiredFurni;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -60,7 +62,7 @@ public final class HabboUtil {
     }
 
     public void sendChat(String text) {
-        ext.sendToClient(new HPacket("Chat", HMessage.Direction.TOCLIENT, -1, "[ROBOSORT] " + text, 0, 1, 0, -1));
+        ext.sendToClient(Chat.builder().userIndex(-1).text("[ROBOSORT] " + text).gesture(Gesture.NONE).style(ChatBarStyle.GENERIC).links(Collections.emptyList()).trackingId(-1).build().toPacket());
     }
 
     // Sorting helper
@@ -71,9 +73,9 @@ public final class HabboUtil {
 
         int currentAltitude = ext.floorPlanState.getTileHeight(x, y) * 100;
         for (WiredFurni wiredFurni : stackState) {
-            int currentZ = (int) (wiredFurni.floorItem.getTile().getZ() * 100);
+            int currentZ = (int) (wiredFurni.getZ() * 100);
             if (Math.abs(currentZ - currentAltitude) > 1) { // tolerate 1 unit precision
-                ext.mover.queueAltitude(wiredFurni.floorItem.getId(), currentAltitude);
+                ext.mover.queueAltitude(wiredFurni.id, currentAltitude);
             }
             currentAltitude += wiredFurni.height;
         }

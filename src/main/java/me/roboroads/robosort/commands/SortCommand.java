@@ -39,6 +39,6 @@ public class SortCommand extends Command {
 
     @Override
     public void onClick(WiredFurni wiredFurni) {
-        HabboUtil.I().sort(wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY());
+        HabboUtil.I().sort(wiredFurni.getX(), wiredFurni.getY());
     }
 }

@@ -37,7 +37,7 @@ public class RightCommand extends Command {
 
     @Override
     public void onClick(WiredFurni wiredFurni) {
-        int rotated = RotateStack.apply(ext, wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY(), false);
+        int rotated = RotateStack.apply(ext, wiredFurni.getX(), wiredFurni.getY(), false);
         HabboUtil.I().sendChat("Rotating " + rotated + " box(es) to the right.");
     }
 }

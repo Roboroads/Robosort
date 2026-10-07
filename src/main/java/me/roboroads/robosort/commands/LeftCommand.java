@@ -37,7 +37,7 @@ public class LeftCommand extends Command {
 
     @Override
     public void onClick(WiredFurni wiredFurni) {
-        int rotated = RotateStack.apply(ext, wiredFurni.floorItem.getTile().getX(), wiredFurni.floorItem.getTile().getY(), true);
+        int rotated = RotateStack.apply(ext, wiredFurni.getX(), wiredFurni.getY(), true);
         HabboUtil.I().sendChat("Rotating " + rotated + " box(es) to the left.");
     }
 }
