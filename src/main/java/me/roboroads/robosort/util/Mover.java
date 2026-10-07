@@ -19,6 +19,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+// Last in, first out: the newest movement goes first, and re-queueing a furni's variable makes it the newest
 public class Mover {
     private static final String ALTITUDE_VARIABLE_ID = "-123";
     private static final String ROTATION_VARIABLE_ID = "-122";
@@ -81,7 +82,7 @@ public class Mover {
         }
 
         Movement movement;
-        while ((movement = queue.poll()) != null) {
+        while ((movement = queue.pollLast()) != null) {
             if (movement.variableId.equals(ALTITUDE_VARIABLE_ID)) {
                 Movement rotation = take(movement.furniId, ROTATION_VARIABLE_ID);
                 if (rotation != null && !isNoOp(rotation)) {
