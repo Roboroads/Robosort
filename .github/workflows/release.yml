@@ -84,3 +84,61 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload ${{ needs.release-please.outputs.tag_name }} ./release/Robosort-${{ needs.release-please.outputs.tag_name }}.zip
+
+  # Opens a PR on G-ExtensionStore from the fork. EXTENSION_STORE_TOKEN is a classic PAT with the public_repo and workflow scopes.
+  extension-store:
+    needs:
+      - release-please
+      - upload-release
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.release-please.outputs.tag_name }}
+      VERSION: ${{ needs.release-please.outputs.version }}
+      UPSTREAM: sirjonasxx/G-ExtensionStore
+      STORE_BRANCH: repo/1.5.3
+      STORE_PATH: store/extensions/Robosort
+    steps:
+      - name: Download release files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release download "$TAG" -R "$GITHUB_REPOSITORY" -p "Robosort-$TAG.zip" -D release
+          unzip -o "release/Robosort-$TAG.zip" -d release/files
+          gh release view "$TAG" -R "$GITHUB_REPOSITORY" --json body -q .body > release/notes.md
+
+      - name: Push update branch to fork
+        id: push
+        env:
+          GH_TOKEN: ${{ secrets.EXTENSION_STORE_TOKEN }}
+        run: |
+          login=$(gh api user -q .login)
+          id=$(gh api user -q .id)
+          branch="robosort-$VERSION"
+
+          # The clone is shallow (the store is over 1 GB), so the fork needs the upstream tip before it can take the push
+          gh repo sync "$login/G-ExtensionStore" --source "$UPSTREAM" --branch "$STORE_BRANCH" --force
+
+          git clone --depth 1 --branch "$STORE_BRANCH" "https://github.com/$UPSTREAM.git" store
+          cd store
+          git config user.name "$login"
+          git config user.email "$id+$login@users.noreply.github.com"
+          git switch -c "$branch"
+
+          mkdir -p "$STORE_PATH"
+          cp ../release/files/extension.json ../release/files/extension.zip ../release/files/icon.png "$STORE_PATH/"
+          git add "$STORE_PATH"
+          git commit -m "Update Robosort to $VERSION"
+
+          git push --force "https://x-access-token:$GH_TOKEN@github.com/$login/G-ExtensionStore.git" "$branch"
+          echo "head=$login:$branch" >> "$GITHUB_OUTPUT"
+
+      - name: Open PR on G-ExtensionStore
+        env:
+          GH_TOKEN: ${{ secrets.EXTENSION_STORE_TOKEN }}
+          HEAD: ${{ steps.push.outputs.head }}
+        run: |
+          if [ -n "$(gh pr list -R "$UPSTREAM" --head "${HEAD#*:}" --state open -q '.[].number' --json number)" ]; then
+            echo "PR for $HEAD already open, the force-push updated it"
+            exit 0
+          fi
+          gh pr create -R "$UPSTREAM" --base "$STORE_BRANCH" --head "$HEAD" --title "Update Robosort to $VERSION" --body-file release/notes.md
