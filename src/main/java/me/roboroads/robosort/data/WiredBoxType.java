@@ -4,9 +4,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum WiredBoxType {
-    TRIGGER, SELECTOR, FILTER, CONDITION, ADDON, VARIABLE_EXTRA, VARIABLE, EFFECT;
+    TRIGGER, SELECTOR, FILTER, CONDITION, ADDON, VARIABLE_EXTRA, VARIABLE_FX, VARIABLE, EFFECT;
 
     public String toString() {
+        if (this == VARIABLE_FX) {
+            return "Variable FX";
+        }
+
         // Pretty-print enum name: split on underscores, capitalize each word, and pluralize
         String[] parts = name().toLowerCase().split("_");
         StringBuilder sb = new StringBuilder();
@@ -25,6 +29,6 @@ public enum WiredBoxType {
 
     public static List<WiredBoxType> defaultValues() {
         // Default sorting order
-        return Arrays.asList(TRIGGER, SELECTOR, FILTER, CONDITION, ADDON, EFFECT, VARIABLE, VARIABLE_EXTRA);
+        return Arrays.asList(TRIGGER, SELECTOR, FILTER, CONDITION, ADDON, EFFECT, VARIABLE, VARIABLE_EXTRA, VARIABLE_FX);
     }
 }
