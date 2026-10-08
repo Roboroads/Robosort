@@ -81,6 +81,10 @@ public class WiredFurni {
         this.z = z;
     }
 
+    public void rotateTo(int rotation) {
+        this.rotation = rotation;
+    }
+
     private int getHeight() {
         if (exceptions.containsKey(this.furniClassName)) {
             return exceptions.get(this.furniClassName).height;
