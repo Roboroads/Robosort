@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.3.0](https://github.com/Roboroads/Robosort/compare/v1.2.2...v1.3.0) (2026-10-08)
+
+
+### New
+
+* add a Variable FX sort type ([db10bfc](https://github.com/Roboroads/Robosort/commit/db10bfc87d94ddab6d09ac6895029f78ce3b7131))
+* add a Variable FX sort type ([c25f29e](https://github.com/Roboroads/Robosort/commit/c25f29e421ae2af99b4febeabfc0e94762c6e8d0))
+* add left and right rotation commands with support for all stacks ([c24afa4](https://github.com/Roboroads/Robosort/commit/c24afa49a6622b8723792924175e9a2e86e92872))
+* process the wired movement queue last-in-first-out ([#36](https://github.com/Roboroads/Robosort/issues/36)) ([8dc3887](https://github.com/Roboroads/Robosort/commit/8dc3887c0bb8c12017297e98833c83800ca9440a))
+
+
+### Changed and/or fixed
+
+* fixed handling unknown commands by not handling them ([000aa1d](https://github.com/Roboroads/Robosort/commit/000aa1d6cb6245f66393129ec6d5dd8a3900f234))
+* make forced rotation part of the movement queue, fixing conflicts with move on action and forced direction ([90c0228](https://github.com/Roboroads/Robosort/commit/90c022848500a2dd0fa14028bdc355e34e8824f6))
+* pass rotation value dynamically to properly handle exceptions and target-facing alignment ([7fa428b](https://github.com/Roboroads/Robosort/commit/7fa428b50719246003d0cfc9569cee811875cf4e))
+* send a furni's rotation before its altitude ([#35](https://github.com/Roboroads/Robosort/issues/35)) ([fdf899c](https://github.com/Roboroads/Robosort/commit/fdf899cbff1e41d419e3da8b43f3da29313f1b85))
+* track rotation changes from wired movements ([8210a26](https://github.com/Roboroads/Robosort/commit/8210a26021db8b0ac42dcc8759d09b6d0d4838cf))
+* track rotation changes from wired movements ([f4a98c7](https://github.com/Roboroads/Robosort/commit/f4a98c7b8504f5dade932c817638d8bbe42aa45b))
+
 ## [1.2.2](https://github.com/Roboroads/Robosort/compare/v1.2.1...v1.2.2) (2026-04-26)
 
 
