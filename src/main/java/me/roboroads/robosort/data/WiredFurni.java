@@ -13,6 +13,7 @@ public class WiredFurni {
     private static final int ADDON_BOX_HEIGHT = 37;
     private static final int VARIABLE_BOX_HEIGHT = 120;
     private static final int VARIABLE_ADDON_BOX_HEIGHT = 75;
+    private static final int VARIABLE_FX_BOX_HEIGHT = 100;
 
     private static final Map<String, WiredBoxType> furniClassPrefixTypeMap = new LinkedHashMap<String, WiredBoxType>() {{
         put("wf_trg_", WiredBoxType.TRIGGER);
@@ -20,6 +21,7 @@ public class WiredFurni {
         put("wf_xtra_filter_", WiredBoxType.FILTER);
         put("wf_cnd_", WiredBoxType.CONDITION);
         put("wf_xtra_var_", WiredBoxType.VARIABLE_EXTRA);
+        put("wf_xtra_varfx_", WiredBoxType.VARIABLE_FX);
         put("wf_var_", WiredBoxType.VARIABLE);
         put("wf_xtra_", WiredBoxType.ADDON);
         put("wf_act_", WiredBoxType.EFFECT);
@@ -100,6 +102,8 @@ public class WiredFurni {
                 return VARIABLE_BOX_HEIGHT;
             case VARIABLE_EXTRA:
                 return VARIABLE_ADDON_BOX_HEIGHT;
+            case VARIABLE_FX:
+                return VARIABLE_FX_BOX_HEIGHT;
             default:
                 return DEFAULT_BOX_HEIGHT;
         }
