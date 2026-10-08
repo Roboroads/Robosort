@@ -106,6 +106,12 @@ public class WiredState {
             FurniMove furniMove = (FurniMove) movement;
 
             processMove(furniMove.furniId(), furniMove.targetX(), furniMove.targetY(), furniMove.targetZ());
+
+            // A rotation set through a wired variable only arrives here, not as an ObjectUpdate
+            WiredFurni wiredFurni = currentWired.get(furniMove.furniId());
+            if (wiredFurni != null && furniMove.rotation() != null) {
+                wiredFurni.rotateTo(furniMove.rotation().value());
+            }
         }
     }
 
